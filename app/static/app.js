@@ -35,7 +35,8 @@ function ripple(e, btn) {
   r.style.top = (e.clientY - rect.top - d / 2) + "px";
   btn.appendChild(r); setTimeout(() => r.remove(), 600);
 }
-function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3200); }
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3600); }
+function netMsg(e) { return (e instanceof TypeError) ? "Can't reach the server. Please make sure the app server is running, then try again." : e.message; }
 
 /* ---------- consent ---------- */
 $("#agree").addEventListener("change", e => { $("#toRecord").disabled = !e.target.checked; });
@@ -112,7 +113,7 @@ async function analyze() {
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
     await minWait(t0); stopMsgs(); renderResults(res); go("results");
-  } catch (e) { stopMsgs(); toast("Sorry, that didn’t work: " + e.message); go("record"); }
+  } catch (e) { stopMsgs(); toast("Sorry, that didn’t work. " + netMsg(e)); go("record"); }
 }
 function cycleMsgs() { let i = 0; $("#analyzeMsg").textContent = MSGS[0]; msgInt = setInterval(() => { i = (i + 1) % MSGS.length; $("#analyzeMsg").textContent = MSGS[i]; }, 900); }
 function stopMsgs() { clearInterval(msgInt); }
@@ -124,7 +125,7 @@ $("#exampleBtn").addEventListener("click", async () => {
     const j = await (await fetch("/api/examples")).json();
     const pick = j.examples[Math.floor(Math.random() * j.examples.length)];
     await minWait(t0); stopMsgs(); renderResults(pick.result, true); go("results");
-  } catch (e) { stopMsgs(); toast("Couldn’t load an example."); go("record"); }
+  } catch (e) { stopMsgs(); toast("Couldn’t load an example. " + netMsg(e)); go("record"); }
 });
 
 /* ---------- results ---------- */
