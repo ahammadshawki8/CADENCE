@@ -42,7 +42,7 @@ function netMsg(e) { return (e instanceof TypeError) ? "Can't reach the server. 
 $("#agree").addEventListener("change", e => { $("#toRecord").disabled = !e.target.checked; });
 
 /* ---------- recording ---------- */
-let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null;
+let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null, noiseFloor = 0.02;
 const micBtn = $("#micBtn"), recwrap = $("#record .recwrap");
 buildMeter();
 function buildMeter() { const m = $("#meter"); m.innerHTML = ""; for (let i = 0; i < 16; i++) m.appendChild(document.createElement("i")); }
@@ -82,7 +82,8 @@ micBtn.addEventListener("click", async () => {
   } catch (err) { return toast("We need microphone permission to listen. Please allow it."); }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const src = audioCtx.createMediaStreamSource(stream);
-  analyser = audioCtx.createAnalyser(); analyser.fftSize = 64; src.connect(analyser); drawMeter();
+  analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; src.connect(analyser);
+  noiseFloor = 0.02; drawMeter();
   chunks = []; mediaRec = new MediaRecorder(stream);
   mediaRec.ondataavailable = e => e.data.size && chunks.push(e.data);
   mediaRec.onstop = finishRec; mediaRec.start();
@@ -97,17 +98,28 @@ micBtn.addEventListener("click", async () => {
   $("#playback").classList.add("hidden"); $("#analyzeBtn").disabled = true;
 });
 function drawMeter() {
-  const bars = $$("#meter i"), data = new Uint8Array(analyser.frequencyBinCount);
+  const bars = $$("#meter i");
+  const freq = new Uint8Array(analyser.frequencyBinCount);
+  const time = new Uint8Array(analyser.fftSize);
   let last = performance.now();
   (function loop(now) {
     now = now || performance.now();
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    analyser.getByteFrequencyData(data);
-    let sum = 0; for (let i = 0; i < data.length; i++) sum += data[i];
-    const energy = sum / data.length / 255;                 // 0..1 loudness
-    bars.forEach((b, i) => { b.style.height = 6 + ((data[i * 2] || 0) / 255) * 30 + "px"; });
-    if (energy > 0.055 && wordIdx < words.length) {         // VAD gate: advance only while speaking
-      wordIdx += dt * wordRate; paintWords();
+    analyser.getByteFrequencyData(freq);
+    bars.forEach((b, i) => { b.style.height = 6 + ((freq[i * 4] || 0) / 255) * 30 + "px"; });
+
+    // Voice-activity detection from time-domain RMS with an adaptive noise floor.
+    analyser.getByteTimeDomainData(time);
+    let s = 0; for (let i = 0; i < time.length; i++) { const d = (time[i] - 128) / 128; s += d * d; }
+    const rms = Math.sqrt(s / time.length);
+    if (rms < noiseFloor) noiseFloor = rms;                 // track quiet level quickly
+    else noiseFloor += (rms - noiseFloor) * 0.004;          // rise slowly toward ambient
+    const speaking = rms > noiseFloor + 0.035;              // clearly above the room
+    const rec = recwrap.classList.contains("recording");
+    recwrap.classList.toggle("speaking", rec && speaking);
+    if (rec && speaking && wordIdx < words.length) {        // advance ONLY while you speak
+      wordIdx += dt * wordRate * Math.min(1.6, (rms - noiseFloor) / 0.06 + 0.5);
+      paintWords();
     }
     meterRAF = requestAnimationFrame(loop);
   })();

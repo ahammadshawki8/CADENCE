@@ -137,6 +137,7 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .passage .w{border-radius:5px;padding:0 1.5px;transition:background .12s ease,color .12s ease}
 .passage .w.read{color:var(--ink-soft)}
 .passage .w.cur{background:var(--brand-soft);color:var(--brand)}
+.recording.speaking .micbtn{box-shadow:0 0 0 6px rgba(108,92,231,.18),0 14px 28px -10px rgba(108,92,231,.65)}
 .passage[dir=rtl]{direction:rtl}
 .recwrap{display:flex;flex-direction:column;align-items:center;gap:13px;margin-top:24px;position:relative}
 .rings{position:absolute;top:-4px;width:114px;height:114px;pointer-events:none}
