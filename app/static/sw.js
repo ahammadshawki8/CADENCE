@@ -1,9 +1,9 @@
 /* Cadence service worker - app-shell caching for offline / installable PWA. */
-const CACHE = "cadence-v7";
+const CACHE = "cadence-v8";
 const SHELL = [
   "/", "/static/style.css", "/static/app.js", "/static/favicon.svg",
   "/static/icon-192.png", "/static/icon-512.png", "/static/examples.json",
-  "/static/passages.json", "/manifest.webmanifest"
+  "/static/passages.json", "/static/i18n.json", "/manifest.webmanifest"
 ];
 
 self.addEventListener("install", e => {

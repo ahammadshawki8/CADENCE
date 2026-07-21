@@ -129,10 +129,13 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
   max-width:520px;margin:0 auto 8px;border:1px solid var(--line)}
 .bubble:after{content:"";position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff}
 .bubble p{font-size:18px;font-weight:600;color:var(--ink)}
-.langbar{display:flex;gap:8px;align-items:center;justify-content:center;margin:0 auto 10px}
+.langbar{display:flex;gap:6px;align-items:center;justify-content:center}
+.langbar.top{position:fixed;top:16px;right:16px;z-index:30;background:#fff;border:1px solid var(--line);
+  border-radius:14px;padding:5px 10px;box-shadow:var(--shadow-sm)}
 .langbar .ic{stroke:var(--brand)}
 .langbar select{font-family:'Quicksand';font-weight:700;font-size:14px;color:var(--ink);background:#fff;
-  border:1px solid var(--line);border-radius:12px;padding:7px 14px;cursor:pointer;box-shadow:var(--shadow-sm)}
+  border:none;border-radius:8px;padding:3px 6px;cursor:pointer;max-width:120px}
+.langbar.top select{outline:none}
 .passage{line-height:1.75}
 .passage .w{border-radius:5px;padding:0 1.5px;transition:background .12s ease,color .12s ease}
 .passage .w.read{color:var(--ink-soft)}

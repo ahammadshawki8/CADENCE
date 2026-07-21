@@ -36,7 +36,7 @@ function ripple(e, btn) {
   btn.appendChild(r); setTimeout(() => r.remove(), 600);
 }
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3600); }
-function netMsg(e) { return (e instanceof TypeError) ? "Can't reach the server. Please make sure the app server is running, then try again." : e.message; }
+function netMsg(e) { return (e instanceof TypeError) ? t("toastNet") : e.message; }
 
 /* ---------- consent ---------- */
 $("#agree").addEventListener("change", e => { $("#toRecord").disabled = !e.target.checked; });
@@ -50,15 +50,30 @@ function buildMeter() { const m = $("#meter"); m.innerHTML = ""; for (let i = 0;
 /* ---------- multilingual passage + live word highlighting ---------- */
 let PASSAGES = { en: { name: "English", dir: "ltr", rate: 2.4, text: "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak." } };
 let currentLang = "en", words = [], wordIdx = 0, wordRate = 2.4;
+let T = {};
+
+/* i18n: t(key) with {var} interpolation; falls back to English then the key itself. */
+function t(key, vars) {
+  let s = (T[currentLang] && T[currentLang][key]) || (T.en && T.en[key]) || key;
+  return vars ? s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : "")) : s;
+}
+function applyLang() {
+  $$("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
+  MSGS = [t("am1"), t("am2"), t("am3"), t("am4"), t("am5")];
+  if (!recwrap.classList.contains("recording")) $("#timer").textContent = t("tap");
+  if (lastResult && current === "results") renderResults(lastResult, lastResult._isExample);
+}
 
 (async function initLang() {
   try { PASSAGES = await (await fetch("/static/passages.json")).json(); } catch (e) { /* keep fallback */ }
+  try { T = await (await fetch("/static/i18n.json")).json(); } catch (e) { /* english inline fallback */ }
   const sel = $("#langSel");
   sel.innerHTML = Object.entries(PASSAGES).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
   const nav = (navigator.language || "en").slice(0, 2);
   currentLang = PASSAGES[nav] ? nav : "en"; sel.value = currentLang;
-  sel.addEventListener("change", () => { currentLang = sel.value; renderPassage(); });
-  renderPassage();
+  sel.addEventListener("change", () => { currentLang = sel.value; renderPassage(); applyLang(); });
+  renderPassage(); applyLang();
 })();
 
 function renderPassage() {
@@ -79,7 +94,7 @@ micBtn.addEventListener("click", async () => {
   if (recwrap.classList.contains("recording")) return stopRec();
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-  } catch (err) { return toast("We need microphone permission to listen. Please allow it."); }
+  } catch (err) { return toast(t("toastMic")); }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const src = audioCtx.createMediaStreamSource(stream);
   analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; src.connect(analyser);
@@ -136,10 +151,10 @@ async function finishRec() {
   const audio = await audioCtx.decodeAudioData(await blob.arrayBuffer());
   wavBlob = encodeWav(resampleMono(audio, 16000), 16000);
   const pb = $("#playback"); pb.src = URL.createObjectURL(wavBlob); pb.classList.remove("hidden");
-  if (seconds < 15) toast("Try to read the whole passage (about 30s) for a reliable result.");
+  if (seconds < 15) toast(t("toastShort"));
   $("#analyzeBtn").disabled = false;
 }
-function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = "tap the mic to start"; resetWords(); }
+function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = t("tap"); resetWords(); }
 
 function resampleMono(ab, sr) {
   const n = ab.numberOfChannels, len = ab.length, mono = new Float32Array(len);
@@ -159,10 +174,10 @@ function encodeWav(s, sr) {
 }
 
 /* ---------- analyze ---------- */
-const MSGS = ["Listening to your voice…", "Measuring your pitch", "Reading your rhythm", "Checking voice clarity", "Almost there…"];
+let MSGS = ["Listening to your voice…", "Measuring your pitch", "Reading your rhythm", "Checking voice clarity", "Almost there…"];
 let msgInt;
 async function analyze() {
-  if (!wavBlob) return toast("Please record your voice first.");
+  if (!wavBlob) return toast(t("toastRecordFirst"));
   go("analyzing"); cycleMsgs();
   const fd = new FormData(); fd.append("audio", wavBlob, "rec.wav"); const t0 = Date.now();
   try {
@@ -170,7 +185,7 @@ async function analyze() {
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
     await minWait(t0); stopMsgs(); renderResults(res); go("results");
-  } catch (e) { stopMsgs(); toast("Sorry, that didn’t work. " + netMsg(e)); go("record"); }
+  } catch (e) { stopMsgs(); toast(t("toastAnalyzeFail") + " " + netMsg(e)); go("record"); }
 }
 function cycleMsgs() { let i = 0; $("#analyzeMsg").textContent = MSGS[0]; msgInt = setInterval(() => { i = (i + 1) % MSGS.length; $("#analyzeMsg").textContent = MSGS[i]; }, 900); }
 function stopMsgs() { clearInterval(msgInt); }
@@ -182,48 +197,56 @@ $("#exampleBtn").addEventListener("click", async () => {
     const j = await (await fetch("/api/examples")).json();
     const pick = j.examples[Math.floor(Math.random() * j.examples.length)];
     await minWait(t0); stopMsgs(); renderResults(pick.result, true); go("results");
-  } catch (e) { stopMsgs(); toast("Couldn’t load an example. " + netMsg(e)); go("record"); }
+  } catch (e) { stopMsgs(); toast(t("toastExampleFail") + " " + netMsg(e)); go("record"); }
 });
 
 /* ---------- results ---------- */
 const FAM_ICON = { pitch: "i-mark", jitter: "i-mark", shimmer: "i-mark", hnr: "i-mark",
   loudness: "i-chart", rhythm: "i-chart", spectral: "i-chart", articulation: "i-cpu", other: "i-chart" };
 const FICON = f => FAM_ICON[f] || "i-chart";
-const BANDS = {
-  low: { c: "#17b8a6", title: "Bright and clear", txt: "Your voice shows patterns typical of healthy speech." },
-  moderate: { c: "#6c5ce7", title: "A few patterns to note", txt: "Some speech patterns are worth keeping an eye on - nothing conclusive on its own." },
-  elevated: { c: "#f2775f", title: "Some patterns worth checking", txt: "A few voice patterns resemble those seen in Parkinson’s. This is only a screening signal - consider talking with a doctor." }
+const BAND_SFX = { low: "Low", moderate: "Mod", elevated: "Elev" };
+const BAND_COLOR = { low: "#17b8a6", moderate: "#6c5ce7", elevated: "#f2775f" };
+const BAND_VCOLOR = { low: "#0e8a7c", moderate: "#5b4fd0", elevated: "#d1543b" };
+const FAM_KEY = f => "fam" + f.charAt(0).toUpperCase() + f.slice(1);
+const REP_KEY = {
+  "F0semitoneFrom27.5Hz_sma3nz_stddevNorm": "repPitch", "jitterLocal_sma3nz_amean": "repJitter",
+  "shimmerLocaldB_sma3nz_amean": "repShimmer", "HNRdBACF_sma3nz_amean": "repHnr",
+  "loudness_sma3_amean": "repLoudness", "VoicedSegmentsPerSec": "repVoiced"
 };
 function icon(id) { return `<svg class="ic"><use href="#${id}"/></svg>`; }
+function famLabel(f) { return t(FAM_KEY(f.family)); }
+function narrativeFor(res) {
+  const pct = Math.round(res.probability_pd * 100);
+  const conf = res.confidence != null && res.confidence < 0.66 ? t("narrConfLow") : t("narrConfHigh");
+  return t("narr" + BAND_SFX[res.risk_band], { pct }) + " " + conf + " " + t("narrTail");
+}
 function renderResults(res, isExample) {
-  lastResult = res;
-  const pct = Math.round(res.probability_pd * 100), band = res.risk_band, b = BANDS[band] || BANDS.low;
-  $("#resTitle").textContent = isExample ? "Example voice report" : "Your voice report";
-  const fill = $("#gFill"); fill.style.stroke = b.c; fill.style.strokeDashoffset = 515;
+  lastResult = res; res._isExample = isExample;
+  const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
+  $("#resTitle").textContent = t(isExample ? "resTitleEx" : "resTitle");
+  const fill = $("#gFill"); fill.style.stroke = BAND_COLOR[band] || BAND_COLOR.low; fill.style.strokeDashoffset = 515;
   requestAnimationFrame(() => setTimeout(() => { fill.style.strokeDashoffset = 515 * (1 - pct / 100); }, 60));
   countUp($("#gPct"), pct);
-  $("#verdict").textContent = b.title + ". " + b.txt;
-  $("#verdict").style.color = band === "elevated" ? "#d1543b" : (band === "moderate" ? "#5b4fd0" : "#0e8a7c");
-  $("#narrative").textContent = res.narrative || "";
-  // confidence chip
+  $("#verdict").textContent = t("band" + sfx + "T") + ". " + t("band" + sfx + "X");
+  $("#verdict").style.color = BAND_VCOLOR[band] || BAND_VCOLOR.low;
+  $("#narrative").textContent = narrativeFor(res);
   const cc = $("#confChip");
   if (res.confidence != null) {
-    const c = res.confidence, lvl = c >= 0.66 ? ["high", "#0e8a7c", "i-check"] : c >= 0.4 ? ["medium", "#c98a52", "i-search"] : ["low", "#d1543b", "i-search"];
-    cc.hidden = false; cc.className = "confchip " + lvl[0];
-    cc.style.color = lvl[1];
-    cc.innerHTML = icon(lvl[2]) + `Confidence: ${lvl[0]} · steady across ${res.n_windows || "the"} windows of your voice`;
+    const c = res.confidence, lvl = c >= 0.66 ? ["confHigh", "#0e8a7c", "i-check"] : c >= 0.4 ? ["confMed", "#c98a52", "i-search"] : ["confLow", "#d1543b", "i-search"];
+    cc.hidden = false; cc.className = "confchip"; cc.style.color = lvl[1];
+    cc.innerHTML = icon(lvl[2]) + t("confPrefix") + " " + t(lvl[0]) + " · " + t("confWindows", { n: res.n_windows || "" });
   } else { cc.hidden = true; }
   const maxS = Math.max(...res.top_factors.map(f => Math.abs(f.shap))) || 1;
   $("#factors").innerHTML = res.top_factors.map((f, i) => {
     const pd = f.shap > 0, w = Math.round(Math.abs(f.shap) / maxS * 100);
     return `<div class="factor" style="--d:${0.14 * i + 0.2}s">
-      <div class="frow"><span class="fname">${icon(FICON(f.family))}${f.label}</span>
-      <span class="tag2 ${pd ? "pd" : "hc"}">${icon(pd ? "i-up" : "i-down")}${pd ? "Parkinson’s" : "healthy"}</span></div>
+      <div class="frow"><span class="fname">${icon(FICON(f.family))}${famLabel(f)}</span>
+      <span class="tag2 ${pd ? "pd" : "hc"}">${icon(pd ? "i-up" : "i-down")}${t(pd ? "tagPd" : "tagHc")}</span></div>
       <div class="bar"><i class="${pd ? "pd" : "hc"}" data-w="${w}"></i></div></div>`;
   }).join("");
   setTimeout(() => $$("#factors .bar i").forEach(i => i.style.width = i.dataset.w + "%"), 400);
-  $("#report").innerHTML = res.acoustic_report.map(s => `<div class="stat"><div class="sv">${fmtVal(s.value)}</div><div class="sl">${s.label}</div></div>`).join("");
-  $("#resDisclaimer").textContent = res.disclaimer;
+  $("#report").innerHTML = res.acoustic_report.map(s => `<div class="stat"><div class="sv">${fmtVal(s.value)}</div><div class="sl">${t(REP_KEY[s.key] || s.key)}</div></div>`).join("");
+  $("#resDisclaimer").textContent = t("disclaimer");
   if (band === "low") confetti();
 }
 function fmtVal(v) { return Math.abs(v) >= 100 ? Math.round(v) : (Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3)); }
@@ -234,14 +257,47 @@ function confetti() {
   setTimeout(() => box.innerHTML = "", 4200);
 }
 
-/* ---------- PDF ---------- */
-$("#pdfBtn").addEventListener("click", async (e) => {
-  if (!lastResult) return toast("Run an analysis first.");
+/* ---------- PDF (browser print -> renders every script/language) ---------- */
+function esc(s) { return String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+$("#pdfBtn").addEventListener("click", (e) => {
+  const res = lastResult; if (!res) return toast(t("toastRecordFirst"));
   ripple(e, e.currentTarget);
-  try {
-    const r = await fetch("/api/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lastResult) });
-    if (!r.ok) throw new Error("report failed");
-    const blob = await r.blob(), url = URL.createObjectURL(blob), a = document.createElement("a");
-    a.href = url; a.download = "cadence_voice_report.pdf"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  } catch (err) { toast("Could not generate PDF: " + err.message); }
+  const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
+  const dir = (PASSAGES[currentLang] && PASSAGES[currentLang].dir) || "ltr";
+  const maxS = Math.max(...res.top_factors.map(f => Math.abs(f.shap))) || 1;
+  const factors = res.top_factors.map(f => {
+    const pd = f.shap > 0;
+    return `<tr><td>${esc(famLabel(f))}</td><td style="color:${pd ? "#c0392b" : "#1a8a5a"}">${t(pd ? "tagPd" : "tagHc")}</td>
+      <td>${Math.round(Math.abs(f.shap) / maxS * 100)}%</td></tr>`;
+  }).join("");
+  const measures = res.acoustic_report.map(s => `<tr><td>${esc(t(REP_KEY[s.key] || s.key))}</td><td><b>${fmtVal(s.value)}</b></td></tr>`).join("");
+  const bc = { low: "#1a8a5a", moderate: "#b8860b", elevated: "#c0392b" }[band] || "#1f2a44";
+  const html = `<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><title>Cadence Report</title>
+  <style>
+    body{font-family:'Segoe UI',system-ui,'Noto Sans',sans-serif;color:#1f2a44;margin:36px;line-height:1.5}
+    .hd{background:#1f2a44;color:#fff;padding:12px 16px;border-radius:6px;font-weight:700;font-size:18px}
+    h3{border-bottom:1px solid #d2d6e0;padding-bottom:4px;margin:22px 0 8px;font-size:14px;color:#1f2a44}
+    .big{font-size:40px;font-weight:800;color:${bc}}
+    .muted{color:#5a6070;font-size:13px} table{width:100%;border-collapse:collapse;font-size:13px}
+    td{padding:4px 2px;border-bottom:1px solid #eee} .bar{height:6px;background:#eee;border-radius:4px;margin:6px 0 14px}
+    .bar>i{display:block;height:100%;background:${bc};border-radius:4px;width:${pct}%}
+    .disc{color:#c0392b;font-weight:600;font-size:12px;margin-top:6px}
+    @media print{@page{margin:14mm}}
+  </style></head><body>
+    <div class="hd">${t("pdfHeader")}</div>
+    <p class="muted">${t("pdfGenerated")}: ${new Date().toLocaleString()}</p>
+    <h3>${t("pdfResult")}</h3>
+    <div class="big">${pct}%</div>
+    <div class="muted">${t("indicator")} · ${t("pdfBand")}: <b style="color:${bc}">${t("band" + sfx + "T")}</b></div>
+    <div class="bar"><i></i></div>
+    <h3>${t("pdfSummary")}</h3><p>${esc(narrativeFor(res))}</p>
+    <h3>${t("told")}</h3><table>${factors}</table>
+    <h3>${t("card")}</h3><table>${measures}</table>
+    <h3>${t("pdfMethod")}</h3><p class="disc">${esc(t("disclaimer"))}</p>
+    <p class="muted">github.com/ahammadshawki8/CADENCE</p>
+    <script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script>
+  </body></html>`;
+  const w = window.open("", "_blank");
+  if (!w) return toast(t("toastPdfFail"));
+  w.document.open(); w.document.write(html); w.document.close();
 });

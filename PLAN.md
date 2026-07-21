@@ -150,6 +150,16 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (k): Full-site i18n + VAD highlight fix. (1) Fixed word highlighting: real
+  voice-activity gate (time-domain RMS + adaptive noise floor) so it advances only while speaking,
+  pauses on silence (was a predefined-speed timer). (2) **Full-site translation system**:
+  `app/static/i18n.json` (keyed strings), `data-i18n` markers, client-side result text (verdict,
+  narrative, biomarker labels, confidence, disclaimer) so EVERYTHING translates; global top-right
+  language switcher; brand name kept. **PDF switched to browser-print** (renders every script incl.
+  Arabic/Bengali/Chinese; the old fpdf2 `/api/report` is now unused). Verified end-to-end in Spanish
+  (welcome + results + narrative). SW v8. **STATUS: infra proven with en+es; remaining 8 languages
+  (it/fr/de/pt/hi/bn/ar/zh) + info-page bodies still to be authored into i18n.json (English fallback
+  is graceful meanwhile).**
 - 2026-07-21 (j): Multilingual + live word highlighting + dataset hunt. (1) **Multilingual passage
   selector**: `app/static/passages.json` with 10 languages (en/es/it/fr/de/pt/hi/bn/ar/zh), RTL for
   Arabic, char-split for Chinese; model unchanged (language-independent eGeMAPS). Honest note added
