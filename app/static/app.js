@@ -42,14 +42,14 @@ function netMsg(e) { return (e instanceof TypeError) ? t("toastNet") : e.message
 $("#agree").addEventListener("change", e => { $("#toRecord").disabled = !e.target.checked; });
 
 /* ---------- recording ---------- */
-let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null, noiseFloor = 0.02;
+let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null;
 const micBtn = $("#micBtn"), recwrap = $("#record .recwrap");
 buildMeter();
 function buildMeter() { const m = $("#meter"); m.innerHTML = ""; for (let i = 0; i < 16; i++) m.appendChild(document.createElement("i")); }
 
 /* ---------- multilingual passage + live word highlighting ---------- */
 let PASSAGES = { en: { name: "English", dir: "ltr", rate: 2.4, text: "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak." } };
-let currentLang = "en", words = [], wordIdx = 0, wordRate = 2.4;
+let currentLang = "en";
 let T = {};
 
 /* i18n: t(key) with {var} interpolation; falls back to English then the key itself. */
@@ -78,18 +78,9 @@ function applyLang() {
 })();
 
 function renderPassage() {
-  const p = PASSAGES[currentLang]; wordRate = p.rate || 2.4;
-  const prompt = $("#prompt"); prompt.dir = p.dir || "ltr";
-  words = p.charSplit ? [...p.text].filter(c => c.trim()) : p.text.trim().split(/\s+/);
-  prompt.innerHTML = words.map((w, i) => `<span class="w" id="w${i}">${w}</span>`).join(p.charSplit ? "" : " ");
-  wordIdx = 0; paintWords();
+  const p = PASSAGES[currentLang];
+  const prompt = $("#prompt"); prompt.dir = p.dir || "ltr"; prompt.textContent = p.text;
 }
-function paintWords() {
-  const spans = $("#prompt").children; if (!spans.length) return;
-  const cur = Math.min(Math.floor(wordIdx), words.length - 1);
-  for (let i = 0; i < spans.length; i++) spans[i].className = "w" + (i < cur ? " read" : i === cur ? " cur" : "");
-}
-function resetWords() { wordIdx = 0; paintWords(); }
 
 micBtn.addEventListener("click", async () => {
   if (recwrap.classList.contains("recording")) return stopRec();
@@ -98,12 +89,11 @@ micBtn.addEventListener("click", async () => {
   } catch (err) { return toast(t("toastMic")); }
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const src = audioCtx.createMediaStreamSource(stream);
-  analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; src.connect(analyser);
-  noiseFloor = 0.02; drawMeter();
+  analyser = audioCtx.createAnalyser(); analyser.fftSize = 512; src.connect(analyser); drawMeter();
   chunks = []; mediaRec = new MediaRecorder(stream);
   mediaRec.ondataavailable = e => e.data.size && chunks.push(e.data);
   mediaRec.onstop = finishRec; mediaRec.start();
-  recwrap.classList.add("recording"); resetWords();
+  recwrap.classList.add("recording");
   seconds = 0; $("#timer").textContent = "0.0s · listening…";
   timerInt = setInterval(() => {
     seconds += 0.1;
@@ -114,29 +104,10 @@ micBtn.addEventListener("click", async () => {
   $("#playback").classList.add("hidden"); $("#analyzeBtn").disabled = true;
 });
 function drawMeter() {
-  const bars = $$("#meter i");
-  const freq = new Uint8Array(analyser.frequencyBinCount);
-  const time = new Uint8Array(analyser.fftSize);
-  let last = performance.now();
-  (function loop(now) {
-    now = now || performance.now();
-    const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    analyser.getByteFrequencyData(freq);
-    bars.forEach((b, i) => { b.style.height = 6 + ((freq[i * 4] || 0) / 255) * 30 + "px"; });
-
-    // Voice-activity detection from time-domain RMS with an adaptive noise floor.
-    analyser.getByteTimeDomainData(time);
-    let s = 0; for (let i = 0; i < time.length; i++) { const d = (time[i] - 128) / 128; s += d * d; }
-    const rms = Math.sqrt(s / time.length);
-    if (rms < noiseFloor) noiseFloor = rms;                 // track quiet level quickly
-    else noiseFloor += (rms - noiseFloor) * 0.004;          // rise slowly toward ambient
-    const speaking = rms > noiseFloor + 0.035;              // clearly above the room
-    const rec = recwrap.classList.contains("recording");
-    recwrap.classList.toggle("speaking", rec && speaking);
-    if (rec && speaking && wordIdx < words.length) {        // advance ONLY while you speak
-      wordIdx += dt * wordRate * Math.min(1.6, (rms - noiseFloor) / 0.06 + 0.5);
-      paintWords();
-    }
+  const bars = $$("#meter i"), data = new Uint8Array(analyser.frequencyBinCount);
+  (function loop() {
+    analyser.getByteFrequencyData(data);
+    bars.forEach((b, i) => { b.style.height = 6 + ((data[i * 2] || 0) / 255) * 30 + "px"; });
     meterRAF = requestAnimationFrame(loop);
   })();
 }
@@ -155,7 +126,7 @@ async function finishRec() {
   if (seconds < 15) toast(t("toastShort"));
   $("#analyzeBtn").disabled = false;
 }
-function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = t("tap"); resetWords(); }
+function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = t("tap"); }
 
 function resampleMono(ab, sr) {
   const n = ab.numberOfChannels, len = ab.length, mono = new Float32Array(len);
