@@ -118,6 +118,10 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (c): Repo live — **https://github.com/ahammadshawki8/CADENCE (private)**. First clean
+  commit `308cbbf` as `Ahammad Shawki <ahammadshawki8@gmail.com>` (no Claude trailer) pushed to
+  `main`. `.gitignore` excludes `data/` + `artifacts/*.npz|npy`. gh authenticated via PAT.
+  Milestone workflow: `git add -A && git commit && git push` as ahammadshawki8 at each milestone.
 - 2026-07-21 (b): Full pipeline built & validated end-to-end. Dataset: 61 speakers (37 HC / 24 PD),
   831 files; PR (reading passage) = best task (100% class coverage). **Discovered severe
   acquisition confound**: within-dataset AUC=1.0 for BOTH wav2vec2 and acoustic features even after
