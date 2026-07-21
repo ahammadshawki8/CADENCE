@@ -43,24 +43,31 @@ a **screening aid, not a diagnosis**.
 - arXiv 2504.17739 (2025) — Interpretable early detection of PD through speech.
 
 ### Datasets
-- **PRIMARY:** `birgermoell/Italian_Parkinsons_Voice_and_Speech` (HuggingFace, instant).
-- **CROSS-LINGUAL TEST:** NeuroVoz (Zenodo 10.5281/zenodo.10777657) — request access.
-- **PHONE-MIC / 2nd test:** MDVR-KCL. **Fallbacks:** UCI, Figshare vowel sets.
+- **PRIMARY (have):** `birgermoell/Italian_Parkinsons_Voice_and_Speech` (HuggingFace, instant).
+- **CROSS-DB TEST (have):** MDVR-KCL (English, mobile, CC-BY, downloaded).
+- **TESTED, doesn't help:** Figshare telephone vowels (8kHz gap → 0.39). Hahad14 HF = MDVR mirror.
+  Kaggle sets (UCI Oxford, Sakar) = feature-only, no raw audio, unusable. AMP-PD/FoG = non-voice.
+- **PENDING (requested):** NeuroVoz (Zenodo 10.5281/zenodo.10777657, restricted, needs institutional
+  email). PC-GITA (email Orozco-Arroyave, UdeA) — NOT requested yet (mention in "what's next").
 
 ### Technical core (the 30% story) — as built
-Raw audio → 16kHz → **46 interpretable acoustic biomarkers via librosa** (jitter, shimmer, HNR, F0
-variability, speech rate, pause ratio, spectral, MFCC). Model = StandardScaler + Logistic
-Regression on the **33 language-independent** features. **Subject-independent splits (no speaker
-leakage).** Cross-database eval is the honest headline. Explainability via **SHAP LinearExplainer**
-(temporal saliency deferred). wav2vec2 embeddings kept only for the confound comparison.
+Raw audio → 16kHz → **eGeMAPS acoustic functionals (openSMILE, 88)**. Shipped model = StandardScaler
++ Logistic Regression, **speaker-independent** CV + **leave-one-dataset-out** cross-database eval
+(the honest headline). **Domain-Adversarial Network** (`src/dann.py`, gradient reversal, unsupervised
+domain adaptation) makes features channel-invariant → **honest cross-lingual AUC ~0.80** (up from
+0.72; deep embeddings collapse to ~0.60). Explainability via **SHAP** grouped into clinical biomarker
+families. Robust inference: quality gating + **windowed median over 16 windows** + **confidence**.
+Torch-free serving (librosa + openSMILE + sklearn + shap). `features.py` (46 librosa) + wav2vec2/
+HuBERT kept for the confound/ablation comparisons only.
 
 ### Product — as built
-In-browser record (read one sentence) → risk indicator + confidence gauge + plain-language
-**narrative paragraph** + SHAP factor bars + acoustic report card + strict "not a diagnosis" ethics
-panel + downloadable **professional PDF**. Info pages: About/credit, Methodology, Architecture,
-License. Stack: **FastAPI backend + custom animated SPA (installable PWA, mobile-responsive)**;
-inference torch-free (librosa + scikit-learn + shap + fpdf2). Deploy target: **HuggingFace Spaces**
-(free CPU, Dockerfile ready) + public GitHub repo.
+In-browser record (~30s passage, quality-gated) → risk gauge + **confidence chip** + plain-language
+**narrative** + SHAP biomarker-family bars + acoustic report card + strict "not a diagnosis" ethics
+panel + **browser-print professional PDF** (renders every script). **Multilingual: full UI +
+passage in 10 languages** (en/es/it/fr/de/pt/hi/bn/ar/zh, RTL for Arabic); language-independent
+model. Info pages: About/credit, Methodology, Architecture, License. Stack: **FastAPI + custom
+animated SPA (installable PWA, mobile-responsive, privacy-preserving)**. Deploy target: **HuggingFace
+Spaces** (free CPU, Dockerfile ready) + public GitHub repo.
 
 ## ⚠️ CRITICAL FINDING (2026-07-21) — Acquisition confound; cross-DB is mandatory
 The Italian dataset has a severe recording-condition confound between cohorts. Evidence:
@@ -105,9 +112,18 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
       3-colour palette; SVG icons (no emoji); home button; info pages (About/credit, Methodology,
       Architecture, License); professional PDF export (`report_pdf.py` + `/api/report`); **installable
       PWA** (manifest + service worker + icons); mobile-responsive; no long dashes. Verified in Chrome.
+- [x] **Feature + robustness upgrade:** switched shipped model to **eGeMAPS** (openSMILE); robust
+      audio (30s, quality gating, windowed-median over 16 windows, confidence); browser-print PDF.
+- [x] **Multilingual:** full-site i18n in 10 languages (RTL for Arabic), language-independent model.
+- [x] **Research upgrade:** **Domain-Adversarial Network** (`src/dann.py`) → honest cross-lingual
+      AUC ~0.80. Studied SOTA + competitors (Canary Speech, academic DANN, Kaggle). No GPU needed.
+- [x] **Finalisation pass:** README, PLAN, info pages de-staled; all consistent. (this checkpoint)
+- [ ] **WAITING (1–2 days):** NeuroVoz access. If granted → add as 3rd DANN domain, retrain, redeploy
+      the domain-adversarial model into the app (numpy export for torch-free inference), push number up.
 - [ ] **NEXT — Deploy to HF Spaces:** needs user's HF login (`huggingface-cli login`). `Dockerfile` +
       serving `app/requirements.txt` ready. Run locally: `python app/backend.py` → http://127.0.0.1:7860
-- [ ] **Presentation:** 2–3 min demo video + screenshots.
+- [ ] **Presentation / Devpost writeup:** 2–3 min demo video + screenshots + the honest-rigor +
+      domain-adversarial story. Mention PC-GITA/NeuroVoz + multimodal (proteomics, gait) as future work.
 - [ ] **Devpost:** description (5 sections + social-impact statement) + README polish (metrics, citations).
 - [ ] **Submit early** (deadline Jul 30, 9pm PDT). Buffer/polish.
 - [ ] **Optional:** fold in NeuroVoz (Spanish) as a 3rd validation corpus once Zenodo access is granted.
@@ -142,14 +158,21 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 
 ## Cross-database results (headline) — see RESULTS.md
 - Within-Italian AUC ≈ 1.0 is a mirage (channel confound).
-- **Italian → MDVR-KCL (honest, cross-lingual):** acoustic-LI **AUC ≈ 0.72, bal-acc ≈ 0.72**;
-  wav2vec2 collapses to ≈ 0.60 (near chance). Interpretable biomarkers transfer; deep embeddings
-  do not. MDVR-KCL: 37 spk (21 HC/16 PD), reading + spontaneous, 44.1 kHz, CC-BY (downloaded).
-- NeuroVoz (Spanish, 3rd corpus) pending Zenodo access request (restricted; user submitting form).
+- Deep embeddings (wav2vec2/HuBERT) collapse cross-DB to ≈ 0.60; interpretable eGeMAPS transfer at
+  ≈ 0.72; **eGeMAPS + Domain-Adversarial Network → ≈ 0.80** (Italian→MDVR 0.78, MDVR→Italian 0.82).
+- Corpora: Italian (61 spk), MDVR-KCL (37 spk, CC-BY). Figshare telephone vowels tested → 0.39 (8kHz
+  channel gap too big). NeuroVoz (Spanish) access requested; a 3rd domain would strengthen the DANN.
 
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (n): **FINALISATION checkpoint (pre-submission).** Removed the word-highlight feature
+  (VAD unreliable). Checked all extra Kaggle datasets/competitions → none usable (feature-only voice
+  or non-voice modalities). Confirmed PC-GITA + NeuroVoz access processes (both free, both need
+  institutional affiliation; NeuroVoz requested). De-staled README, PLAN (Technical core / Product /
+  Datasets / Cross-DB headline / Execution plan), and app info pages (Architecture, Methodology) to
+  match the shipped eGeMAPS + DANN + multilingual + robust-audio reality. **State: finalised; waiting
+  1–2 days on NeuroVoz. If it lands → extend (3rd DANN domain, redeploy). Else → Devpost writeup.**
 - 2026-07-21 (m): **Research upgrade — domain-adversarial adaptation (the headline method).** Read
   SOTA (generalizable speech marker: HuBERT + DAT + elderly DAPT; Canary Speech: HuBERT-Large + RF,
   AUC 0.97 on private clinical data). Findings: (1) HuBERT collapses on our strict unseen-channel

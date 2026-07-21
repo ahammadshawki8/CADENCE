@@ -197,10 +197,10 @@
           both train and test.</li>
         <li><b>Honest cross-database validation.</b> Train on the Italian corpus, test on the
           independently-collected English MDVR-KCL corpus (a different language and microphone).</li>
-        <li><b>Domain-adversarial adaptation.</b> A gradient-reversal domain classifier forces the
-          model's features to be indistinguishable between recording channels, so it relies on the
-          disease signal rather than the equipment. This lifts honest cross-lingual AUC from ~0.72 to
-          <b>~0.80</b>.</li>
+        <li><b>Domain-adversarial adaptation.</b> In cross-database validation, a gradient-reversal
+          domain classifier that forces channel-invariant features lifts our honest cross-lingual AUC
+          from ~0.72 to <b>~0.80</b> — relying on the disease signal, not the recording equipment. It
+          becomes the deployed model as more clean corpora are added.</li>
         <li><b>Explainability.</b> SHAP attributes each screening result to specific voice biomarkers.</li>
         <li><b>Language-independent.</b> Cadence measures voice quality and prosody, not words, so it
           works across languages; the reading passage is offered in several languages. Validated so
@@ -219,19 +219,23 @@
     <h2 class="title">Architecture</h2>
     <div class="doc">
       <div class="arch">
-        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>Voice input</span><small>browser records, encodes 16 kHz WAV</small></div>
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>Voice input</span><small>~30s reading; quality-gated, 16 kHz</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Feature extraction</span><small>librosa acoustic biomarkers</small></div>
+        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Features</span><small>eGeMAPS acoustic biomarkers (openSMILE)</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Model</span><small>StandardScaler + logistic regression</small></div>
+        <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Model</span><small>logistic on eGeMAPS; windowed median (robust)</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-search"/></svg><span>Explain</span><small>SHAP per-biomarker impact</small></div>
+        <div class="node"><svg class="ic"><use href="#i-search"/></svg><span>Explain</span><small>SHAP biomarker families + confidence</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Report</span><small>web result + professional PDF</small></div>
+        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Report</span><small>web result + printable PDF (any language)</small></div>
       </div>
-      <p class="muted">Backend: FastAPI (Python). Frontend: a single-page app with client-side audio
-      capture. Inference uses only acoustic features, so no deep-learning runtime is required to
-      serve the app. Trained offline on pooled Italian + MDVR-KCL reading recordings.</p>
+      <p class="muted">Backend: FastAPI (Python). Frontend: a single-page PWA with client-side audio
+      capture. Features are eGeMAPS functionals (openSMILE); the recording is scored over overlapping
+      windows and combined by median for robustness. Inference is torch-free (no deep-learning runtime
+      needed to serve). The live app ships the interpretable logistic model, trained offline on pooled
+      Italian + MDVR-KCL recordings. Our research additionally uses a domain-adversarial network
+      (gradient reversal) to learn channel-invariant features (~0.80 cross-lingual AUC); this is the
+      planned deployed model as more clean corpora are added.</p>
     </div>
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>

@@ -1,21 +1,26 @@
+# Full research + training environment (the app serves with the lighter app/requirements.txt).
 # Core ML
-torch>=2.2
-transformers>=4.40
-datasets>=2.19
-scikit-learn>=1.4
-numpy
+numpy<2.4          # numba/librosa compatibility
 scipy
 pandas
+scikit-learn>=1.4
+torch>=2.2         # domain-adversarial network (src/dann.py); wav2vec2/HuBERT embeddings
 
-# Audio
+# Audio + features
 librosa>=0.10
 soundfile
-# praat-parselmouth  # optional; falls back to librosa features if no wheel for your Python
+opensmile>=2.5     # eGeMAPS features (shipped model)
+transformers>=4.40 # wav2vec2 / HuBERT (confound + ablation comparisons only)
+datasets>=2.19     # HuggingFace dataset download
+huggingface_hub
 
-# Model persistence + explainability
+# Model persistence, explainability, reporting
 joblib>=1.3
 shap>=0.44
+fpdf2>=2.7
 matplotlib
 
-# App
-gradio>=4.0
+# Web app (see app/requirements.txt for the minimal, torch-free serving set)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
