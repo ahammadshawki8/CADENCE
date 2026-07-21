@@ -150,6 +150,17 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (i): Robustness + feature upgrade (user concerns). (1) **Robust audio pipeline**:
+  capture ~30s reading (full North Wind passage), quality gating (trim silence, reject clipping,
+  require >=8s voiced), and **windowed median aggregation** (16 overlapping windows) so one bad
+  second cannot drive a false result; report a **confidence** from window agreement (shown as a chip
+  + a caution line in the narrative). (2) **Feature upgrade to eGeMAPS** (openSMILE, 88 functionals,
+  literature-standard): honest Italian->MDVR AUC ~0.73-0.75 (bal-acc up to 0.76), model retrained,
+  `explain.py` now groups SHAP into clinical families (pitch/jitter/shimmer/HNR/loudness/rhythm/
+  articulation). New files: `egemaps.py`, `run_egemaps.py`. Added opensmile to app deps; SW v5.
+  **HONEST-SCORE NOTE:** within-dataset 1.0 stays a confound mirage; ~0.75 is the honest cross-lingual
+  READING ceiling with 2 corpora. The ~0.85 honest number needs **NeuroVoz** (clean corpus, within-
+  corpus speaker-independent) + sustained-vowel cross-lingual test -> TOP PRIORITY once access lands.
 - 2026-07-21 (h): UI fixes + PLAN cleanup. Friendlier "server offline" error message; SW cache
   bumped (v4); fixed gauge label overflowing the ring; added fixed header fade so scrolled content
   no longer clashes with the top dots. Went through PLAN line-by-line and de-staled it (project/

@@ -1,7 +1,12 @@
 """End-to-end screening inference - the single entry point used by the web app.
 
-screen(wav) : audio file/array -> {probability, risk band, explanation, acoustic
-report, disclaimer, model metadata}. Deliberately framed as a screening aid.
+Robustness-first design (a short noisy moment must not create a false report):
+  * Expect a LONGER recording (>= ~20-30s of reading).
+  * Trim silence and require a minimum amount of real voiced speech; reject noisy
+    or clipped audio with a friendly message instead of scoring it.
+  * Score the recording in overlapping windows and aggregate by MEDIAN, so one bad
+    window cannot dominate. Report a confidence based on window agreement.
+Features are eGeMAPS (openSMILE); explanation via SHAP families.
 """
 from __future__ import annotations
 
@@ -10,9 +15,9 @@ from pathlib import Path
 import numpy as np
 
 from config import SAMPLE_RATE
-from features import extract_features
-from model import load_model, predict_proba_from_features
-from explain import explain_features
+from egemaps import egemaps_signal, feature_names
+from model import load_model
+from explain import explain_vector, FAMILY_LABEL
 
 DISCLAIMER = (
     "Cadence is a research prototype and screening aid, NOT a medical device or diagnosis. "
@@ -20,49 +25,59 @@ DISCLAIMER = (
     "your health, please consult a qualified neurologist."
 )
 
-# Raw biomarkers surfaced in the user-facing acoustic report (physiologically meaningful).
+# eGeMAPS functionals surfaced in the user-facing report card (guarded if absent).
 REPORT_KEYS = [
-    ("f0_std", "Pitch variability (Hz)"),
-    ("jitter_rel", "Jitter (pitch instability)"),
-    ("shimmer_rel", "Shimmer (loudness instability)"),
-    ("hnr_db", "Harmonics-to-noise ratio (dB)"),
-    ("onset_rate", "Articulation rate (events/s)"),
-    ("pause_ratio", "Pause proportion"),
+    ("F0semitoneFrom27.5Hz_sma3nz_stddevNorm", "Pitch variability"),
+    ("jitterLocal_sma3nz_amean", "Jitter (pitch instability)"),
+    ("shimmerLocaldB_sma3nz_amean", "Shimmer (dB)"),
+    ("HNRdBACF_sma3nz_amean", "Harmonics-to-noise (dB)"),
+    ("loudness_sma3_amean", "Loudness"),
+    ("VoicedSegmentsPerSec", "Voiced segments/sec"),
 ]
-_MIN_SECONDS = 2.0
-_bundle = None
 
-# Short, human names for the narrative paragraph (avoids clinical jargon).
-SHORT_NAME = {
-    "pause_ratio": "how much you paused", "n_segments_per_s": "your speaking rhythm",
-    "onset_rate": "your speaking rate", "hnr_db": "your voice clarity",
-    "jitter_rel": "your pitch steadiness", "shimmer_rel": "your loudness steadiness",
-    "f0_std": "your pitch variation", "f0_range": "your pitch range",
-    "f0_mean": "your average pitch", "voiced_frac": "how steadily you voiced sounds",
+# Short names for the narrative paragraph, per SHAP family.
+FAMILY_SHORT = {
+    "pitch": "your pitch variation", "jitter": "your pitch stability",
+    "shimmer": "your loudness stability", "hnr": "your voice clarity",
+    "loudness": "your loudness", "rhythm": "your speaking rhythm",
+    "spectral": "your voice tone", "articulation": "your articulation",
+    "other": "some voice measures",
 }
 
-
-def _short(f):
-    if f["feature"].startswith("mfcc"):
-        return "your articulation"
-    if f["feature"].split("_")[0] in ("centroid", "rolloff", "bandwidth", "flatness", "zcr"):
-        return "your voice tone"
-    return SHORT_NAME.get(f["feature"], f["label"].lower())
+MIN_VOICED_SEC = 8.0     # need at least this much real speech
+RECOMMENDED_SEC = 30.0
+WIN_SEC, HOP_SEC = 5.0, 2.5
+_TRIM_DB = 30
+_bundle = None
 
 
-def _dedup(names):
+def _get_bundle():
+    global _bundle
+    if _bundle is None:
+        _bundle = load_model()
+    return _bundle
+
+
+def _risk_band(proba: float, threshold: float) -> str:
+    if proba >= max(0.66, threshold + 0.15):
+        return "elevated"
+    if proba >= threshold:
+        return "moderate"
+    return "low"
+
+
+def _dedup(xs):
     seen, out = set(), []
-    for n in names:
-        if n not in seen:
-            seen.add(n); out.append(n)
+    for x in xs:
+        if x not in seen:
+            seen.add(x); out.append(x)
     return out
 
 
-def make_narrative(proba: float, band: str, factors: list) -> str:
-    """A warm, plain-language paragraph describing the result (no long dashes)."""
+def make_narrative(proba, band, families, confidence):
     pct = round(proba * 100)
-    pd_names = _dedup(_short(f) for f in factors if f["shap"] > 0)[:2]
-    hc_names = _dedup(_short(f) for f in factors if f["shap"] < 0)[:1]
+    pd_names = _dedup(FAMILY_SHORT.get(f["family"], "some measures") for f in families if f["shap"] > 0)[:2]
+    hc_names = _dedup(FAMILY_SHORT.get(f["family"], "some measures") for f in families if f["shap"] < 0)[:1]
     pd_str = " and ".join(pd_names) if pd_names else "several voice measures"
     hc_str = hc_names[0] if hc_names else "some measures"
     if band == "low":
@@ -81,62 +96,75 @@ def make_narrative(proba: float, band: str, factors: list) -> str:
                 f"range and is not conclusive on its own.")
         mid = (f"A few patterns, such as {pd_str}, leaned toward the signals we watch for, while "
                f"{hc_str} looked more typical.")
+    conf = ("This estimate was steady across your recording." if confidence >= 0.66 else
+            "Your voice varied across the recording, so treat this estimate with extra caution.")
     tail = ("Please remember this is a quick screening from a single recording and cannot diagnose "
             "any condition. If this result concerns you, a short conversation with a doctor is the "
             "best next step.")
-    return f"{lead} {mid} {tail}"
+    return f"{lead} {mid} {conf} {tail}"
 
 
-def _get_bundle():
-    global _bundle
-    if _bundle is None:
-        _bundle = load_model()
-    return _bundle
-
-
-def _risk_band(proba: float, threshold: float) -> str:
-    if proba >= max(0.66, threshold + 0.15):
-        return "elevated"
-    if proba >= threshold:
-        return "moderate"
-    return "low"
-
-
-def screen(wav, sr: int | None = None) -> dict:
-    """wav: path to a file, or (array, sr). Returns a screening result dict."""
-    bundle = _get_bundle()
-
+def _load_audio(wav, sr):
     if isinstance(wav, (str, Path)):
         import librosa
         y, _ = librosa.load(str(wav), sr=SAMPLE_RATE, mono=True)
-        source_path = str(wav)
-    else:
-        y = np.asarray(wav, dtype=np.float32)
-        if sr and sr != SAMPLE_RATE:
-            import librosa
-            y = librosa.resample(y, orig_sr=sr, target_sr=SAMPLE_RATE)
-        source_path = None
+        return y
+    y = np.asarray(wav, dtype=np.float32)
+    if sr and sr != SAMPLE_RATE:
+        import librosa
+        y = librosa.resample(y, orig_sr=sr, target_sr=SAMPLE_RATE)
+    return y
 
-    duration = len(y) / SAMPLE_RATE
-    if duration < _MIN_SECONDS:
-        return {"ok": False, "error": f"Recording too short ({duration:.1f}s). "
-                f"Please read for at least {_MIN_SECONDS:.0f} seconds.", "disclaimer": DISCLAIMER}
 
-    # extract_features expects a path; write a temp file if given an array
-    if source_path is None:
-        import soundfile as sf, tempfile
-        tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-        sf.write(tmp.name, y, SAMPLE_RATE)
-        source_path = tmp.name
+def _quality_gate(y):
+    """Return (ok, message, voiced_seconds, trimmed_audio)."""
+    import librosa
+    total = len(y) / SAMPLE_RATE
+    intervals = librosa.effects.split(y, top_db=_TRIM_DB)
+    voiced = float(sum(b - a for a, b in intervals)) / SAMPLE_RATE if len(intervals) else 0.0
+    clip = float(np.mean(np.abs(y) > 0.985)) if len(y) else 1.0
+    if total < 3:
+        return False, f"Recording too short ({total:.0f}s). Please read for ~30 seconds.", voiced, y
+    if clip > 0.02:
+        return False, "The recording is clipping (too loud). Move back from the mic and try again.", voiced, y
+    if voiced < MIN_VOICED_SEC:
+        return (False, f"We only detected {voiced:.0f}s of clear speech. Please read the full "
+                f"sentence aloud for at least {int(MIN_VOICED_SEC)}s in a quiet spot.", voiced, y)
+    # keep from first to last voiced sample (drop leading/trailing silence)
+    y_trim = y[intervals[0][0]:intervals[-1][1]] if len(intervals) else y
+    return True, "", voiced, y_trim
 
-    feats = extract_features(source_path)
-    proba = predict_proba_from_features(feats, bundle)
+
+def _windows(y):
+    win, hop = int(WIN_SEC * SAMPLE_RATE), int(HOP_SEC * SAMPLE_RATE)
+    if len(y) <= win:
+        return [y]
+    return [y[i:i + win] for i in range(0, len(y) - win + 1, hop)][:16]
+
+
+def screen(wav, sr: int | None = None) -> dict:
+    bundle = _get_bundle()
+    y = _load_audio(wav, sr)
+    ok, msg, voiced, y_trim = _quality_gate(y)
+    if not ok:
+        return {"ok": False, "error": msg, "disclaimer": DISCLAIMER}
+
+    names = bundle["feature_names"]
+    pipe = bundle["pipeline"]
+    vecs = [egemaps_signal(w, SAMPLE_RATE)[0] for w in _windows(y_trim)]
+    vecs = np.vstack(vecs)
+    med = np.median(vecs, axis=0)
+    win_probas = pipe.predict_proba(vecs)[:, 1]
+    proba = float(pipe.predict_proba(med.reshape(1, -1))[0, 1])
+    confidence = round(float(max(0.0, 1.0 - 2.0 * np.std(win_probas))), 2)
+
     threshold = bundle["threshold"]
-    exp = explain_features(feats, bundle, top_k=6)
-
-    report = [{"label": lbl, "key": k, "value": round(float(feats[k]), 4)}
-              for k, lbl in REPORT_KEYS]
     band = _risk_band(proba, threshold)
+    exp = explain_vector(med, bundle, top_k=6)
+
+    name_val = dict(zip(names, med))
+    report = [{"label": lbl, "key": k, "value": round(float(name_val[k]), 4)}
+              for k, lbl in REPORT_KEYS if k in name_val]
 
     return {
         "ok": True,
@@ -144,8 +172,10 @@ def screen(wav, sr: int | None = None) -> dict:
         "threshold": round(threshold, 4),
         "flagged": bool(proba >= threshold),
         "risk_band": band,
-        "duration_sec": round(duration, 1),
-        "narrative": make_narrative(proba, band, exp["top"]),
+        "confidence": confidence,
+        "voiced_sec": round(voiced, 1),
+        "n_windows": int(vecs.shape[0]),
+        "narrative": make_narrative(proba, band, exp["top"], confidence),
         "top_factors": exp["top"],
         "acoustic_report": report,
         "model": {
@@ -166,8 +196,10 @@ if __name__ == "__main__":
     for label in (1, 0):
         r = it[it.label == label].iloc[0]
         res = screen(r.path)
-        print(f"\n### true={'PD' if label else 'HC'} :: {r.filename}")
+        tag = "PD" if label else "HC"
+        if not res["ok"]:
+            print(f"### true={tag} :: {res['error']}"); continue
+        print(f"\n### true={tag} :: {r.filename}")
         print(f"  P(PD)={res['probability_pd']:.1%}  band={res['risk_band']}  "
-              f"flagged={res['flagged']} (threshold {res['threshold']:.2f})")
-        print("  top factor:", res["top_factors"][0]["label"],
-              f"({res['top_factors'][0]['shap']:+.2f})")
+              f"conf={res['confidence']}  windows={res['n_windows']}  voiced={res['voiced_sec']}s")
+        print("  top factor:", res["top_factors"][0]["label"], f"({res['top_factors'][0]['shap']:+.2f})")

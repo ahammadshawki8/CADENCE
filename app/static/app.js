@@ -60,7 +60,12 @@ micBtn.addEventListener("click", async () => {
   mediaRec.onstop = finishRec; mediaRec.start();
   recwrap.classList.add("recording");
   seconds = 0; $("#timer").textContent = "0.0s · listening…";
-  timerInt = setInterval(() => { seconds += 0.1; $("#timer").textContent = seconds.toFixed(1) + "s · tap to stop"; }, 100);
+  timerInt = setInterval(() => {
+    seconds += 0.1;
+    const hint = seconds < 30 ? "keep reading… (aim for ~30s)" : "great, tap to stop when done";
+    $("#timer").textContent = seconds.toFixed(1) + "s · " + hint;
+    if (seconds >= 60) stopRec();   // safety auto-stop
+  }, 100);
   $("#playback").classList.add("hidden"); $("#analyzeBtn").disabled = true;
 });
 function drawMeter() {
@@ -79,7 +84,7 @@ async function finishRec() {
   const audio = await audioCtx.decodeAudioData(await blob.arrayBuffer());
   wavBlob = encodeWav(resampleMono(audio, 16000), 16000);
   const pb = $("#playback"); pb.src = URL.createObjectURL(wavBlob); pb.classList.remove("hidden");
-  if (seconds < 3) toast("A little short - try ~6 seconds for a better read.");
+  if (seconds < 15) toast("Try to read the whole passage (about 30s) for a reliable result.");
   $("#analyzeBtn").disabled = false;
 }
 function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = "tap the mic to start"; }
@@ -129,7 +134,9 @@ $("#exampleBtn").addEventListener("click", async () => {
 });
 
 /* ---------- results ---------- */
-const FICON = k => /^(f0|jitter|shimmer|hnr|voiced)/.test(k) ? "i-mark" : k.startsWith("mfcc") ? "i-cpu" : "i-chart";
+const FAM_ICON = { pitch: "i-mark", jitter: "i-mark", shimmer: "i-mark", hnr: "i-mark",
+  loudness: "i-chart", rhythm: "i-chart", spectral: "i-chart", articulation: "i-cpu", other: "i-chart" };
+const FICON = f => FAM_ICON[f] || "i-chart";
 const BANDS = {
   low: { c: "#17b8a6", title: "Bright and clear", txt: "Your voice shows patterns typical of healthy speech." },
   moderate: { c: "#6c5ce7", title: "A few patterns to note", txt: "Some speech patterns are worth keeping an eye on - nothing conclusive on its own." },
@@ -146,11 +153,19 @@ function renderResults(res, isExample) {
   $("#verdict").textContent = b.title + ". " + b.txt;
   $("#verdict").style.color = band === "elevated" ? "#d1543b" : (band === "moderate" ? "#5b4fd0" : "#0e8a7c");
   $("#narrative").textContent = res.narrative || "";
+  // confidence chip
+  const cc = $("#confChip");
+  if (res.confidence != null) {
+    const c = res.confidence, lvl = c >= 0.66 ? ["high", "#0e8a7c", "i-check"] : c >= 0.4 ? ["medium", "#c98a52", "i-search"] : ["low", "#d1543b", "i-search"];
+    cc.hidden = false; cc.className = "confchip " + lvl[0];
+    cc.style.color = lvl[1];
+    cc.innerHTML = icon(lvl[2]) + `Confidence: ${lvl[0]} · steady across ${res.n_windows || "the"} windows of your voice`;
+  } else { cc.hidden = true; }
   const maxS = Math.max(...res.top_factors.map(f => Math.abs(f.shap))) || 1;
   $("#factors").innerHTML = res.top_factors.map((f, i) => {
     const pd = f.shap > 0, w = Math.round(Math.abs(f.shap) / maxS * 100);
     return `<div class="factor" style="--d:${0.14 * i + 0.2}s">
-      <div class="frow"><span class="fname">${icon(FICON(f.feature))}${f.label}</span>
+      <div class="frow"><span class="fname">${icon(FICON(f.family))}${f.label}</span>
       <span class="tag2 ${pd ? "pd" : "hc"}">${icon(pd ? "i-up" : "i-down")}${pd ? "Parkinson’s" : "healthy"}</span></div>
       <div class="bar"><i class="${pd ? "pd" : "hc"}" data-w="${w}"></i></div></div>`;
   }).join("");

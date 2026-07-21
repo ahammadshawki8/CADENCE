@@ -3,90 +3,86 @@
     {
       "title": "Example A",
       "result": {
-        "probability_pd": 0.8943,
-        "threshold": 0.5013,
+        "probability_pd": 0.6498,
+        "threshold": 0.5318,
         "flagged": true,
-        "risk_band": "elevated",
-        "duration_sec": 57.0,
-        "narrative": "Your recording produced a screening indicator of 89%, which sits in the higher range. The patterns that most influenced this were how much you paused and your voice tone, which can resemble speech changes associated with Parkinson's. Even so, your voice clarity still looked closer to healthy speech. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
+        "risk_band": "moderate",
+        "confidence": 0.54,
+        "voiced_sec": 29.5,
+        "n_windows": 16,
+        "narrative": "Your recording produced a screening indicator of 65%, which sits in the middle range and is not conclusive on its own. A few patterns, such as your loudness and your voice tone, leaned toward the signals we watch for, while your articulation looked more typical. Your voice varied across the recording, so treat this estimate with extra caution. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
           {
-            "feature": "pause_ratio",
-            "label": "Proportion of silence and pausing",
-            "value": 0.5393402739726028,
-            "shap": 1.234234827610103,
+            "family": "loudness",
+            "label": "Loudness dynamics",
+            "shap": 0.7719177044498032,
             "direction": "toward Parkinson's"
           },
           {
-            "feature": "rolloff_std",
-            "label": "Variability of high-frequency rolloff",
-            "value": 2795.9980581709406,
-            "shap": 1.0068299505785687,
+            "family": "spectral",
+            "label": "Voice tone - spectral balance",
+            "shap": 0.7567203918106133,
             "direction": "toward Parkinson's"
           },
           {
-            "feature": "hnr_db",
-            "label": "Harmonics-to-noise ratio - voice clarity (often reduced/breathier in PD)",
-            "value": -5.966029167175293,
-            "shap": -0.8615151426877424,
+            "family": "articulation",
+            "label": "Articulation - vocal-tract shaping",
+            "shap": -0.7274129568352619,
             "direction": "toward healthy"
           },
           {
-            "feature": "mfcc1_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 1",
-            "value": 121.32110595703125,
-            "shap": 0.8152122947477339,
-            "direction": "toward Parkinson's"
-          },
-          {
-            "feature": "voiced_frac",
-            "label": "Fraction of time the voice is phonating",
-            "value": 0.514301738642737,
-            "shap": -0.6244841911289846,
+            "family": "rhythm",
+            "label": "Speech rhythm and rate (often reduced in PD)",
+            "shap": -0.3593212043972459,
             "direction": "toward healthy"
           },
           {
-            "feature": "bandwidth_std",
-            "label": "Variability of spectral spread",
-            "value": 779.7646627177111,
-            "shap": 0.5279704815472894,
+            "family": "hnr",
+            "label": "Voice clarity - harmonics-to-noise (often reduced in PD)",
+            "shap": 0.2234652637140582,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "family": "shimmer",
+            "label": "Shimmer - loudness stability (often raised in PD)",
+            "shap": 0.20630557850072845,
             "direction": "toward Parkinson's"
           }
         ],
         "acoustic_report": [
           {
-            "label": "Pitch variability (Hz)",
-            "key": "f0_std",
-            "value": 26.9624
+            "label": "Pitch variability",
+            "key": "F0semitoneFrom27.5Hz_sma3nz_stddevNorm",
+            "value": 0.0807
           },
           {
             "label": "Jitter (pitch instability)",
-            "key": "jitter_rel",
-            "value": 0.0527
+            "key": "jitterLocal_sma3nz_amean",
+            "value": 0.0295
           },
           {
-            "label": "Shimmer (loudness instability)",
-            "key": "shimmer_rel",
-            "value": 0.1979
+            "label": "Shimmer (dB)",
+            "key": "shimmerLocaldB_sma3nz_amean",
+            "value": 1.2328
           },
           {
-            "label": "Harmonics-to-noise ratio (dB)",
-            "key": "hnr_db",
-            "value": -5.966
+            "label": "Harmonics-to-noise (dB)",
+            "key": "HNRdBACF_sma3nz_amean",
+            "value": 9.0193
           },
           {
-            "label": "Articulation rate (events/s)",
-            "key": "onset_rate",
-            "value": 3.9803
+            "label": "Loudness",
+            "key": "loudness_sma3_amean",
+            "value": 0.1011
           },
           {
-            "label": "Pause proportion",
-            "key": "pause_ratio",
-            "value": 0.5393
+            "label": "Voiced segments/sec",
+            "key": "VoicedSegmentsPerSec",
+            "value": 1.7206
           }
         ],
         "model": {
-          "features": "language-independent phonatory/prosodic biomarkers",
+          "features": "eGeMAPS v02 (openSMILE, 88 functionals)",
           "trained_on": [
             "Italian Parkinson's Voice and Speech",
             "MDVR-KCL"
@@ -99,90 +95,86 @@
     {
       "title": "Example B",
       "result": {
-        "probability_pd": 0.1635,
-        "threshold": 0.5013,
+        "probability_pd": 0.0754,
+        "threshold": 0.5318,
         "flagged": false,
         "risk_band": "low",
-        "duration_sec": 45.9,
-        "narrative": "Your recording produced a screening indicator of 16%, which sits in the lower range and is consistent with typical healthy speech. Measures such as how much you paused looked healthy, and although your articulation drew a little attention, nothing stood out strongly. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
+        "confidence": 0.8,
+        "voiced_sec": 45.9,
+        "n_windows": 16,
+        "narrative": "Your recording produced a screening indicator of 8%, which sits in the lower range and is consistent with typical healthy speech. Measures such as your speaking rhythm looked healthy, and although your pitch variation drew a little attention, nothing stood out strongly. This estimate was steady across your recording. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
           {
-            "feature": "pause_ratio",
-            "label": "Proportion of silence and pausing",
-            "value": 0.0013944228532832836,
-            "shap": -2.5444426225011334,
+            "family": "rhythm",
+            "label": "Speech rhythm and rate (often reduced in PD)",
+            "shap": -0.8180758883757481,
             "direction": "toward healthy"
           },
           {
-            "feature": "mfcc1_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 1",
-            "value": 66.48066711425781,
-            "shap": -1.916237340825163,
+            "family": "loudness",
+            "label": "Loudness dynamics",
+            "shap": -0.7264237369550812,
             "direction": "toward healthy"
           },
           {
-            "feature": "mfcc6_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 6",
-            "value": 9.482912063598633,
-            "shap": -1.054836041338918,
+            "family": "jitter",
+            "label": "Jitter - pitch stability (often raised in PD)",
+            "shap": -0.3235167909913488,
             "direction": "toward healthy"
           },
           {
-            "feature": "mfcc3_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 3",
-            "value": 16.375757217407227,
-            "shap": 0.9762450929417094,
+            "family": "pitch",
+            "label": "Pitch variation (monotone speech is a PD marker)",
+            "shap": 0.31417866956733126,
             "direction": "toward Parkinson's"
           },
           {
-            "feature": "mfcc7_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 7",
-            "value": 10.50871467590332,
-            "shap": 0.8289659303375425,
-            "direction": "toward Parkinson's"
+            "family": "shimmer",
+            "label": "Shimmer - loudness stability (often raised in PD)",
+            "shap": -0.2485469804423186,
+            "direction": "toward healthy"
           },
           {
-            "feature": "mfcc2_std",
-            "label": "Articulatory dynamics - variability of vocal-tract coefficient 2",
-            "value": 38.26484680175781,
-            "shap": -0.7833123474405734,
+            "family": "articulation",
+            "label": "Articulation - vocal-tract shaping",
+            "shap": -0.1684715767505551,
             "direction": "toward healthy"
           }
         ],
         "acoustic_report": [
           {
-            "label": "Pitch variability (Hz)",
-            "key": "f0_std",
-            "value": 25.3425
+            "label": "Pitch variability",
+            "key": "F0semitoneFrom27.5Hz_sma3nz_stddevNorm",
+            "value": 0.1305
           },
           {
             "label": "Jitter (pitch instability)",
-            "key": "jitter_rel",
-            "value": 0.0449
+            "key": "jitterLocal_sma3nz_amean",
+            "value": 0.0217
           },
           {
-            "label": "Shimmer (loudness instability)",
-            "key": "shimmer_rel",
-            "value": 0.1178
+            "label": "Shimmer (dB)",
+            "key": "shimmerLocaldB_sma3nz_amean",
+            "value": 1.0995
           },
           {
-            "label": "Harmonics-to-noise ratio (dB)",
-            "key": "hnr_db",
-            "value": -1.326
+            "label": "Harmonics-to-noise (dB)",
+            "key": "HNRdBACF_sma3nz_amean",
+            "value": 4.7115
           },
           {
-            "label": "Articulation rate (events/s)",
-            "key": "onset_rate",
-            "value": 4.8369
+            "label": "Loudness",
+            "key": "loudness_sma3_amean",
+            "value": 0.1316
           },
           {
-            "label": "Pause proportion",
-            "key": "pause_ratio",
-            "value": 0.0014
+            "label": "Voiced segments/sec",
+            "key": "VoicedSegmentsPerSec",
+            "value": 2.2267
           }
         ],
         "model": {
-          "features": "language-independent phonatory/prosodic biomarkers",
+          "features": "eGeMAPS v02 (openSMILE, 88 functionals)",
           "trained_on": [
             "Italian Parkinson's Voice and Speech",
             "MDVR-KCL"

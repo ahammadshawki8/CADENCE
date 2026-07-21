@@ -22,29 +22,27 @@ from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import roc_auc_score, roc_curve, balanced_accuracy_score, f1_score
 
 from config import DATA_DIR, ARTIFACTS_DIR, RANDOM_SEED
-from features import features_for_paths, LANGUAGE_INDEPENDENT, subset_indices
+from egemaps import egemaps_for_paths
 
 MODEL_PATH = ARTIFACTS_DIR / "cadence_model.joblib"
-_C = 1.0
+_C = 0.1
 
 
 def build_reading_dataset():
-    """Pool Italian (PR) + MDVR (read); return LI features, labels, groups, dataset tags."""
+    """Pool Italian (PR) + MDVR (read); return eGeMAPS features, labels, groups, dataset tags."""
     it = pd.read_parquet(DATA_DIR / "index_italian.parquet")
     it = it[it.task == "PR"].reset_index(drop=True)
     md = pd.read_parquet(DATA_DIR / "index_mdvr.parquet")
     md = md[md.task == "read"].reset_index(drop=True)
 
-    Xi, names = features_for_paths(it.path.tolist())
-    Xm, _ = features_for_paths(md.path.tolist())
-    idx = subset_indices(names, LANGUAGE_INDEPENDENT)
-    li_names = [names[i] for i in idx]
+    Xi, names = egemaps_for_paths(it.path.tolist())
+    Xm, _ = egemaps_for_paths(md.path.tolist())
 
-    X = np.vstack([Xi[:, idx], Xm[:, idx]])
+    X = np.vstack([Xi, Xm])
     y = np.concatenate([it.label.values, md.label.values])
     groups = np.concatenate([it.speaker.values, md.speaker.values])
     dataset = np.array(["italian"] * len(it) + ["mdvr"] * len(md))
-    return X, y, groups, dataset, li_names
+    return X, y, groups, dataset, names
 
 
 def leave_one_dataset_out(X, y, dataset):
@@ -93,7 +91,7 @@ def train_final(save: bool = True):
         "background_labels": y.astype(int),
         "metadata": {
             "task": "reading passage (connected speech)",
-            "features": "language-independent phonatory/prosodic biomarkers",
+            "features": "eGeMAPS v02 (openSMILE, 88 functionals)",
             "train_datasets": ["Italian Parkinson's Voice and Speech", "MDVR-KCL"],
             "n_train": int(len(y)),
             "external_validation": external,   # HONEST expected performance
@@ -122,7 +120,7 @@ if __name__ == "__main__":
     b = train_final()
     md = b["metadata"]
     print(f"Trained on {md['n_train']} reading recordings ({', '.join(md['train_datasets'])})")
-    print(f"Features: {len(b['feature_names'])} language-independent biomarkers")
+    print(f"Features: {len(b['feature_names'])} eGeMAPS functionals (openSMILE)")
     print(f"Operating threshold (Youden J): {b['threshold']:.3f}")
     print("\nHonest external (leave-one-dataset-out) validation:")
     for k, v in md["external_validation"].items():

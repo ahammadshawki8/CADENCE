@@ -166,7 +166,10 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .gpct span{font-size:21px}
 .glabel{font-size:9px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.2px;
   max-width:100px;line-height:1.2;text-align:center;margin-top:4px}
-.verdict{font-family:'Baloo 2';font-size:19px;font-weight:700;max-width:480px;margin:6px auto 0}
+.confchip{display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:12.5px;
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 14px;margin:2px auto 0;box-shadow:var(--shadow-sm)}
+.confchip .ic{width:15px;height:15px;stroke:currentColor}
+.verdict{font-family:'Baloo 2';font-size:19px;font-weight:700;max-width:480px;margin:10px auto 0}
 .narrative{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
   max-width:540px;margin:14px auto 0;text-align:left;color:#59547e;font-weight:500;font-size:14.5px;
   line-height:1.6;box-shadow:var(--shadow-sm)}
