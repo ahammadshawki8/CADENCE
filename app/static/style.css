@@ -41,6 +41,10 @@ svg symbol #i-heart{fill:currentColor}
 .homebtn:hover{transform:translateY(-2px);background:var(--brand-soft)}
 .homebtn .ic{width:22px;height:22px}
 
+/* fixed header fade so scrolled content never clashes with the dots / home button */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:14;pointer-events:none;
+  background:linear-gradient(#faf9ff 45%, rgba(250,249,255,0.75) 75%, rgba(250,249,255,0))}
+
 /* progress dots */
 .steps{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:9px;z-index:20}
 .steps span{width:9px;height:9px;border-radius:50%;background:var(--line);transition:.4s}
@@ -158,9 +162,10 @@ svg symbol #i-heart{fill:currentColor}
 .g-fill{fill:none;stroke:var(--teal);stroke-width:17;stroke-linecap:round;
   stroke-dasharray:515;stroke-dashoffset:515;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1),stroke 1s}
 .gaugecenter{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.gpct{font-family:'Baloo 2';font-size:50px;font-weight:800;color:var(--ink)}
-.gpct span{font-size:23px}
-.glabel{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.6px}
+.gpct{font-family:'Baloo 2';font-size:46px;font-weight:800;color:var(--ink);line-height:1}
+.gpct span{font-size:21px}
+.glabel{font-size:9px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.2px;
+  max-width:100px;line-height:1.2;text-align:center;margin-top:4px}
 .verdict{font-family:'Baloo 2';font-size:19px;font-weight:700;max-width:480px;margin:6px auto 0}
 .narrative{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;
   max-width:540px;margin:14px auto 0;text-align:left;color:#59547e;font-weight:500;font-size:14.5px;
