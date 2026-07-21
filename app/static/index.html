@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cadence · your friendly voice check ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/static/style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%A4%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+<!-- floating pastel background -->
+<div class="bg" aria-hidden="true">
+  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+  <span class="blob b4"></span>
+  <div class="sparkles" id="sparkles"></div>
+</div>
+
+<!-- progress dots (linear flow) -->
+<div class="steps" id="steps" aria-hidden="true">
+  <span data-step="welcome" class="on"></span>
+  <span data-step="learn"></span>
+  <span data-step="record"></span>
+  <span data-step="analyzing"></span>
+  <span data-step="results"></span>
+</div>
+
+<main id="app">
+
+  <!-- 1 · WELCOME -->
+  <section class="screen show" id="welcome">
+    <div class="mascot" id="mascot">
+      <svg viewBox="0 0 220 200" width="180" height="164" aria-label="Cadi the voice sprite">
+        <ellipse class="shadow" cx="110" cy="182" rx="60" ry="10"></ellipse>
+        <g id="mascotBody">
+          <path class="body" d="M110 26c46 0 78 32 78 74 0 40-30 70-78 70S32 140 32 100c0-42 32-74 78-74z"></path>
+          <ellipse class="cheek" cx="72" cy="112" rx="12" ry="8"></ellipse>
+          <ellipse class="cheek" cx="148" cy="112" rx="12" ry="8"></ellipse>
+          <g class="eyes">
+            <circle class="eye" cx="86" cy="92" r="9"></circle>
+            <circle class="eye" cx="134" cy="92" r="9"></circle>
+            <circle class="spark" cx="89" cy="89" r="3"></circle>
+            <circle class="spark" cx="137" cy="89" r="3"></circle>
+          </g>
+          <path class="mouth" d="M98 118 q12 12 24 0"></path>
+          <!-- little sound waves -->
+          <path class="wave w-l" d="M26 92 q-10 8 0 16"></path>
+          <path class="wave w-r" d="M194 92 q10 8 0 16"></path>
+        </g>
+      </svg>
+    </div>
+    <h1 class="logo">Cadence</h1>
+    <p class="tag">a friendly little check-up for your <b>voice</b> ✨</p>
+    <p class="sub">Read one short sentence out loud. In a few seconds we’ll show you
+      gentle insights about your speech patterns — cute, clear, and yours.</p>
+    <button class="cta big" data-go="learn">Let’s go! <span class="emo">🌸</span></button>
+    <p class="mini">🔒 Your voice is analysed and then discarded. Nothing is stored.</p>
+  </section>
+
+  <!-- 2 · LEARN / CONSENT -->
+  <section class="screen" id="learn">
+    <h2 class="title">How it works</h2>
+    <div class="steps3">
+      <div class="stepcard pop" style="--d:.05s"><div class="ico">🗣️</div><h3>1 · Read</h3><p>Say one short sentence out loud, nice and natural.</p></div>
+      <div class="stepcard pop" style="--d:.15s"><div class="ico">🎧</div><h3>2 · We listen</h3><p>We measure pitch, rhythm & clarity — right on the page.</p></div>
+      <div class="stepcard pop" style="--d:.25s"><div class="ico">📊</div><h3>3 · Insights</h3><p>See a friendly voice report you can actually understand.</p></div>
+    </div>
+    <div class="ethics soft">
+      <span class="badge">💛 please read</span>
+      <p>Cadence is a <b>research demo & screening aid — not a diagnosis</b>. It can’t tell you
+      whether you have any condition. If you’re ever worried about your health, please talk to a
+      real doctor. </p>
+      <label class="agree"><input type="checkbox" id="agree" /> <span>I understand — this is just a friendly check ✨</span></label>
+    </div>
+    <button class="cta" id="toRecord" data-go="record" disabled>Continue <span class="emo">→</span></button>
+  </section>
+
+  <!-- 3 · RECORD -->
+  <section class="screen" id="record">
+    <h2 class="title">Read this out loud 🎀</h2>
+    <div class="bubble pop">
+      <p id="prompt">“The North Wind and the Sun were disputing which was the stronger, when a
+        traveler came along wrapped in a warm cloak.”</p>
+    </div>
+
+    <div class="recwrap">
+      <div class="rings" id="rings"><span></span><span></span><span></span></div>
+      <button class="micbtn" id="micBtn" aria-label="record">
+        <svg viewBox="0 0 24 24" width="42" height="42"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M17 11a5 5 0 0 1-10 0M12 16v4M8 20h8" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="meter" id="meter" aria-hidden="true"></div>
+      <div class="timer" id="timer">tap the mic to start</div>
+    </div>
+
+    <audio id="playback" controls class="playback hidden"></audio>
+
+    <div class="rowbtns">
+      <button class="cta" id="analyzeBtn" data-go="analyzing" disabled>Analyse my voice 🌸</button>
+    </div>
+    <button class="linklike" id="exampleBtn">…or peek at an example ✨</button>
+    <p class="mini" id="recHint">psst — read for at least ~6 seconds for the best result 💫</p>
+  </section>
+
+  <!-- 4 · ANALYZING -->
+  <section class="screen" id="analyzing">
+    <div class="mascot listening"><svg viewBox="0 0 220 200" width="150" height="136"><use href="#mascotBody"/></svg></div>
+    <div class="eq" id="eq"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <h2 class="title" id="analyzeMsg">Listening to your voice…</h2>
+    <p class="sub">crunching pitch, rhythm & clarity ✨</p>
+  </section>
+
+  <!-- 5 · RESULTS -->
+  <section class="screen" id="results">
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+    <h2 class="title" id="resTitle">Your voice report 🌟</h2>
+
+    <div class="gaugewrap">
+      <svg class="gauge" viewBox="0 0 200 200" width="210" height="210">
+        <circle class="g-track" cx="100" cy="100" r="82"></circle>
+        <circle class="g-fill" id="gFill" cx="100" cy="100" r="82"></circle>
+      </svg>
+      <div class="gaugecenter">
+        <div class="gpct" id="gPct">0<span>%</span></div>
+        <div class="glabel" id="gLabel">screening indicator</div>
+      </div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+
+    <h3 class="sect">What your voice told us 🔍</h3>
+    <div class="factors" id="factors"></div>
+
+    <h3 class="sect">Your voice report card 🃏</h3>
+    <div class="report" id="report"></div>
+
+    <div class="ethics soft result-ethics">
+      <span class="badge">💛 remember</span>
+      <p id="resDisclaimer"></p>
+    </div>
+
+    <button class="cta big" id="againBtn" data-go="record">Try again 🔁</button>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</main>
+
+<footer class="foot">Cadence · research demo for voice-based Parkinson’s screening ·
+  interpretable acoustic biomarkers · <span>not a medical device</span></footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

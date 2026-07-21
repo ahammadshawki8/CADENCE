@@ -1,0 +1,194 @@
+{
+  "examples": [
+    {
+      "title": "Example A",
+      "result": {
+        "probability_pd": 0.8943,
+        "threshold": 0.5013,
+        "flagged": true,
+        "risk_band": "elevated",
+        "duration_sec": 57.0,
+        "top_factors": [
+          {
+            "feature": "pause_ratio",
+            "label": "Proportion of silence and pausing",
+            "value": 0.5393402739726028,
+            "shap": 1.234234827610103,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "feature": "rolloff_std",
+            "label": "Variability of high-frequency rolloff",
+            "value": 2795.9980581709406,
+            "shap": 1.0068299505785687,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "feature": "hnr_db",
+            "label": "Harmonics-to-noise ratio - voice clarity (often reduced/breathier in PD)",
+            "value": -5.966029167175293,
+            "shap": -0.8615151426877424,
+            "direction": "toward healthy"
+          },
+          {
+            "feature": "mfcc1_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 1",
+            "value": 121.32110595703125,
+            "shap": 0.8152122947477339,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "feature": "voiced_frac",
+            "label": "Fraction of time the voice is phonating",
+            "value": 0.514301738642737,
+            "shap": -0.6244841911289846,
+            "direction": "toward healthy"
+          },
+          {
+            "feature": "bandwidth_std",
+            "label": "Variability of spectral spread",
+            "value": 779.7646627177111,
+            "shap": 0.5279704815472894,
+            "direction": "toward Parkinson's"
+          }
+        ],
+        "acoustic_report": [
+          {
+            "label": "Pitch variability (Hz)",
+            "key": "f0_std",
+            "value": 26.9624
+          },
+          {
+            "label": "Jitter (pitch instability)",
+            "key": "jitter_rel",
+            "value": 0.0527
+          },
+          {
+            "label": "Shimmer (loudness instability)",
+            "key": "shimmer_rel",
+            "value": 0.1979
+          },
+          {
+            "label": "Harmonics-to-noise ratio (dB)",
+            "key": "hnr_db",
+            "value": -5.966
+          },
+          {
+            "label": "Articulation rate (events/s)",
+            "key": "onset_rate",
+            "value": 3.9803
+          },
+          {
+            "label": "Pause proportion",
+            "key": "pause_ratio",
+            "value": 0.5393
+          }
+        ],
+        "model": {
+          "features": "language-independent phonatory/prosodic biomarkers",
+          "trained_on": [
+            "Italian Parkinson's Voice and Speech",
+            "MDVR-KCL"
+          ],
+          "expected_external_auc": 0.72
+        },
+        "disclaimer": "Cadence is a research prototype and screening aid, NOT a medical device or diagnosis. A result here cannot confirm or rule out Parkinson's disease. If you have concerns about your health, please consult a qualified neurologist."
+      }
+    },
+    {
+      "title": "Example B",
+      "result": {
+        "probability_pd": 0.1635,
+        "threshold": 0.5013,
+        "flagged": false,
+        "risk_band": "low",
+        "duration_sec": 45.9,
+        "top_factors": [
+          {
+            "feature": "pause_ratio",
+            "label": "Proportion of silence and pausing",
+            "value": 0.0013944228532832836,
+            "shap": -2.5444426225011334,
+            "direction": "toward healthy"
+          },
+          {
+            "feature": "mfcc1_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 1",
+            "value": 66.48066711425781,
+            "shap": -1.916237340825163,
+            "direction": "toward healthy"
+          },
+          {
+            "feature": "mfcc6_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 6",
+            "value": 9.482912063598633,
+            "shap": -1.054836041338918,
+            "direction": "toward healthy"
+          },
+          {
+            "feature": "mfcc3_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 3",
+            "value": 16.375757217407227,
+            "shap": 0.9762450929417094,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "feature": "mfcc7_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 7",
+            "value": 10.50871467590332,
+            "shap": 0.8289659303375425,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "feature": "mfcc2_std",
+            "label": "Articulatory dynamics - variability of vocal-tract coefficient 2",
+            "value": 38.26484680175781,
+            "shap": -0.7833123474405734,
+            "direction": "toward healthy"
+          }
+        ],
+        "acoustic_report": [
+          {
+            "label": "Pitch variability (Hz)",
+            "key": "f0_std",
+            "value": 25.3425
+          },
+          {
+            "label": "Jitter (pitch instability)",
+            "key": "jitter_rel",
+            "value": 0.0449
+          },
+          {
+            "label": "Shimmer (loudness instability)",
+            "key": "shimmer_rel",
+            "value": 0.1178
+          },
+          {
+            "label": "Harmonics-to-noise ratio (dB)",
+            "key": "hnr_db",
+            "value": -1.326
+          },
+          {
+            "label": "Articulation rate (events/s)",
+            "key": "onset_rate",
+            "value": 4.8369
+          },
+          {
+            "label": "Pause proportion",
+            "key": "pause_ratio",
+            "value": 0.0014
+          }
+        ],
+        "model": {
+          "features": "language-independent phonatory/prosodic biomarkers",
+          "trained_on": [
+            "Italian Parkinson's Voice and Speech",
+            "MDVR-KCL"
+          ],
+          "expected_external_auc": 0.72
+        },
+        "disclaimer": "Cadence is a research prototype and screening aid, NOT a medical device or diagnosis. A result here cannot confirm or rule out Parkinson's disease. If you have concerns about your health, please consult a qualified neurologist."
+      }
+    }
+  ]
+}

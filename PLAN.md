@@ -97,8 +97,14 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
       validation baked in (Italian→MDVR AUC 0.72). SHAP explainability (`src/explain.py`) +
       end-to-end `src/screen.py` (wav → P(PD) + risk band + top biomarker factors + acoustic report
       + disclaimer). Verified: PD sample 89% (elevated), HC sample 16% (low).
-- [ ] **Day 5:** Build app shell (temporal saliency optional).
-- [ ] **Day 6:** Deploy to HF Spaces (live URL); in-browser recording works; polish UI + ethics panel.
+- [x] **Day 3 (app):** Built + verified the kawaii animated web app. FastAPI backend (`app/backend.py`)
+      + custom SPA (`app/static/`): linear flow Welcome→How-it-works/consent→Record→Analyzing→
+      Results→Try-again. In-browser recording with client-side WAV encoding (no server ffmpeg),
+      live mic meter, animated gauge, SHAP factor bars, biomarker report card, ethics panel,
+      "peek at an example" path. Verified end-to-end in Chrome. Deploy files ready:
+      `app/requirements.txt` (serving-only, no torch), `Dockerfile` (HF Spaces port 7860).
+- [ ] **Day 6:** Deploy to HF Spaces (needs user's HF account/token). Run locally:
+      `python app/backend.py` -> http://127.0.0.1:7860
 - [ ] **Day 7:** Record 2–3 min demo video; screenshots.
 - [ ] **Day 8:** Devpost description (5 sections + social-impact statement) + README (metrics, citations).
 - [ ] **Day 9:** Buffer/polish; submit early.
@@ -130,6 +136,11 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (f): Web app milestone DONE. Kawaii animated SPA + FastAPI backend, full linear flow
+  verified in-browser (welcome/consent/record/analyzing/results). Client-side WAV encoding, live
+  meter, animated gauge, SHAP factor bars, report card, ethics panel, example path. Deploy scaffold
+  (app/requirements.txt serving-only, Dockerfile for HF Spaces:7860). NEXT: deploy to HF Spaces
+  (needs user HF login) + presentation (demo video, README polish, Devpost writeup).
 - 2026-07-21 (e): Model + explainability milestone DONE. `model.py` (final pooled model, saved
   20K joblib w/ honest external-validation metadata + Youden threshold), `explain.py` (SHAP
   LinearExplainer + clinically-grounded plain-language biomarker descriptions), `screen.py`

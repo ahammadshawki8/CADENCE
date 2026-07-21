@@ -19,9 +19,9 @@ PLAIN = {
     "f0_std": "Pitch variability (monotone speech is a hallmark of PD)",
     "f0_range": "Pitch range across the passage",
     "voiced_frac": "Fraction of time the voice is phonating",
-    "jitter_rel": "Jitter — cycle-to-cycle pitch instability (often raised in PD)",
-    "shimmer_rel": "Shimmer — cycle-to-cycle loudness instability (often raised in PD)",
-    "hnr_db": "Harmonics-to-noise ratio — voice clarity (often reduced/breathier in PD)",
+    "jitter_rel": "Jitter - cycle-to-cycle pitch instability (often raised in PD)",
+    "shimmer_rel": "Shimmer - cycle-to-cycle loudness instability (often raised in PD)",
+    "hnr_db": "Harmonics-to-noise ratio - voice clarity (often reduced/breathier in PD)",
     "pause_ratio": "Proportion of silence and pausing",
     "n_segments_per_s": "Rate of speech segments per second",
     "onset_rate": "Articulation rate (often reduced in PD due to bradykinesia)",
@@ -33,11 +33,11 @@ PLAIN = {
     "rolloff_std": "Variability of high-frequency rolloff",
     "flatness_mean": "Spectral flatness / noisiness (average)",
     "flatness_std": "Variability of spectral flatness",
-    "zcr_mean": "Zero-crossing rate — signal noisiness/articulation (average)",
+    "zcr_mean": "Zero-crossing rate - signal noisiness/articulation (average)",
     "zcr_std": "Variability of zero-crossing rate",
 }
 for _i in range(1, 14):
-    PLAIN[f"mfcc{_i}_std"] = f"Articulatory dynamics — variability of vocal-tract coefficient {_i}"
+    PLAIN[f"mfcc{_i}_std"] = f"Articulatory dynamics - variability of vocal-tract coefficient {_i}"
 
 
 def _explainer(bundle):

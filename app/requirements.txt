@@ -1,0 +1,12 @@
+# Serving-only deps for the Cadence web app (inference uses acoustic features -> no torch).
+numpy<2.4
+scipy
+pandas
+scikit-learn>=1.4
+librosa>=0.10
+soundfile
+joblib>=1.3
+shap>=0.44
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
