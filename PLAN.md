@@ -150,6 +150,13 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (l): Completed i18n for ALL 10 languages (en/es/it/fr/de/pt/hi/bn/ar/zh), 89 keys each,
+  consistent. Whole interactive experience (welcome→results incl. verdict/narrative/labels/
+  confidence/disclaimer/toasts/footer) + browser-print PDF translate. Arabic flips the whole UI to
+  RTL (document.dir). Verified in browser: Spanish, German, Arabic-RTL. **NOT YET translated: the 4
+  info-page BODIES (methodology/architecture/license long prose) + info-page titles remain English
+  (staged; secondary reference).** Non-Latin (hi/bn/ar/zh) translations are my best effort and
+  should be native-reviewed before final submission. SW v10.
 - 2026-07-21 (k): Full-site i18n + VAD highlight fix. (1) Fixed word highlighting: real
   voice-activity gate (time-domain RMS + adaptive noise floor) so it advances only while speaking,
   pauses on silence (was a predefined-speed timer). (2) **Full-site translation system**:

@@ -58,6 +58,7 @@ function t(key, vars) {
   return vars ? s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : "")) : s;
 }
 function applyLang() {
+  document.documentElement.dir = (PASSAGES[currentLang] && PASSAGES[currentLang].dir) || "ltr";
   $$("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
   $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
   MSGS = [t("am1"), t("am2"), t("am3"), t("am4"), t("am5")];
