@@ -12,7 +12,8 @@ librosa>=0.10
 soundfile
 # praat-parselmouth  # optional; falls back to librosa features if no wheel for your Python
 
-# Explainability
+# Model persistence + explainability
+joblib>=1.3
 shap>=0.44
 matplotlib
 

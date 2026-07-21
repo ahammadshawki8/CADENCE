@@ -92,7 +92,12 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
       report honest cross-DB numbers as the headline. Request NeuroVoz access.
 - [ ] **Day 3–4:** Finalize confound-robust model (interpretable biomarkers ± domain-robust deep);
       confound-control experiments table; pick final honest metric.
-- [ ] **Day 5:** Explainability (SHAP + saliency); build app shell.
+- [x] **Day 2b:** Finalized deployable model (`src/model.py`, `artifacts/cadence_model.joblib`):
+      pooled Italian+MDVR reading, 33 language-independent biomarkers, honest leave-one-dataset-out
+      validation baked in (Italian→MDVR AUC 0.72). SHAP explainability (`src/explain.py`) +
+      end-to-end `src/screen.py` (wav → P(PD) + risk band + top biomarker factors + acoustic report
+      + disclaimer). Verified: PD sample 89% (elevated), HC sample 16% (low).
+- [ ] **Day 5:** Build app shell (temporal saliency optional).
 - [ ] **Day 6:** Deploy to HF Spaces (live URL); in-browser recording works; polish UI + ethics panel.
 - [ ] **Day 7:** Record 2–3 min demo video; screenshots.
 - [ ] **Day 8:** Devpost description (5 sections + social-impact statement) + README (metrics, citations).
@@ -125,6 +130,11 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (e): Model + explainability milestone DONE. `model.py` (final pooled model, saved
+  20K joblib w/ honest external-validation metadata + Youden threshold), `explain.py` (SHAP
+  LinearExplainer + clinically-grounded plain-language biomarker descriptions), `screen.py`
+  (deployable wav→result API). Installed shap 0.52. Verified PD=89%/HC=16%. NEXT: web app (Gradio)
+  + deploy to HF Spaces (needs user's HF account).
 - 2026-07-21 (d): Cross-database milestone DONE. Downloaded MDVR-KCL (open, CC-BY); built loader
   (`src/external.py`), transfer harness (`src/xdb.py`), experiment runner (`src/run_xdb.py`), and
   language-independent feature subset. Ran Italian↔MDVR: honest cross-lingual AUC ≈ 0.72 (acoustic-LI),
