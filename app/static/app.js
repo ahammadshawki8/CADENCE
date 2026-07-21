@@ -47,6 +47,34 @@ const micBtn = $("#micBtn"), recwrap = $("#record .recwrap");
 buildMeter();
 function buildMeter() { const m = $("#meter"); m.innerHTML = ""; for (let i = 0; i < 16; i++) m.appendChild(document.createElement("i")); }
 
+/* ---------- multilingual passage + live word highlighting ---------- */
+let PASSAGES = { en: { name: "English", dir: "ltr", rate: 2.4, text: "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak." } };
+let currentLang = "en", words = [], wordIdx = 0, wordRate = 2.4;
+
+(async function initLang() {
+  try { PASSAGES = await (await fetch("/static/passages.json")).json(); } catch (e) { /* keep fallback */ }
+  const sel = $("#langSel");
+  sel.innerHTML = Object.entries(PASSAGES).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+  const nav = (navigator.language || "en").slice(0, 2);
+  currentLang = PASSAGES[nav] ? nav : "en"; sel.value = currentLang;
+  sel.addEventListener("change", () => { currentLang = sel.value; renderPassage(); });
+  renderPassage();
+})();
+
+function renderPassage() {
+  const p = PASSAGES[currentLang]; wordRate = p.rate || 2.4;
+  const prompt = $("#prompt"); prompt.dir = p.dir || "ltr";
+  words = p.charSplit ? [...p.text].filter(c => c.trim()) : p.text.trim().split(/\s+/);
+  prompt.innerHTML = words.map((w, i) => `<span class="w" id="w${i}">${w}</span>`).join(p.charSplit ? "" : " ");
+  wordIdx = 0; paintWords();
+}
+function paintWords() {
+  const spans = $("#prompt").children; if (!spans.length) return;
+  const cur = Math.min(Math.floor(wordIdx), words.length - 1);
+  for (let i = 0; i < spans.length; i++) spans[i].className = "w" + (i < cur ? " read" : i === cur ? " cur" : "");
+}
+function resetWords() { wordIdx = 0; paintWords(); }
+
 micBtn.addEventListener("click", async () => {
   if (recwrap.classList.contains("recording")) return stopRec();
   try {
@@ -58,7 +86,7 @@ micBtn.addEventListener("click", async () => {
   chunks = []; mediaRec = new MediaRecorder(stream);
   mediaRec.ondataavailable = e => e.data.size && chunks.push(e.data);
   mediaRec.onstop = finishRec; mediaRec.start();
-  recwrap.classList.add("recording");
+  recwrap.classList.add("recording"); resetWords();
   seconds = 0; $("#timer").textContent = "0.0s · listening…";
   timerInt = setInterval(() => {
     seconds += 0.1;
@@ -70,7 +98,19 @@ micBtn.addEventListener("click", async () => {
 });
 function drawMeter() {
   const bars = $$("#meter i"), data = new Uint8Array(analyser.frequencyBinCount);
-  (function loop() { analyser.getByteFrequencyData(data); bars.forEach((b, i) => { b.style.height = 6 + ((data[i * 2] || 0) / 255) * 30 + "px"; }); meterRAF = requestAnimationFrame(loop); })();
+  let last = performance.now();
+  (function loop(now) {
+    now = now || performance.now();
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    analyser.getByteFrequencyData(data);
+    let sum = 0; for (let i = 0; i < data.length; i++) sum += data[i];
+    const energy = sum / data.length / 255;                 // 0..1 loudness
+    bars.forEach((b, i) => { b.style.height = 6 + ((data[i * 2] || 0) / 255) * 30 + "px"; });
+    if (energy > 0.055 && wordIdx < words.length) {         // VAD gate: advance only while speaking
+      wordIdx += dt * wordRate; paintWords();
+    }
+    meterRAF = requestAnimationFrame(loop);
+  })();
 }
 function stopRec() {
   clearInterval(timerInt); cancelAnimationFrame(meterRAF);
@@ -87,7 +127,7 @@ async function finishRec() {
   if (seconds < 15) toast("Try to read the whole passage (about 30s) for a reliable result.");
   $("#analyzeBtn").disabled = false;
 }
-function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = "tap the mic to start"; }
+function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = "tap the mic to start"; resetWords(); }
 
 function resampleMono(ab, sr) {
   const n = ab.numberOfChannels, len = ab.length, mono = new Float32Array(len);

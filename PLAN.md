@@ -150,6 +150,17 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (j): Multilingual + live word highlighting + dataset hunt. (1) **Multilingual passage
+  selector**: `app/static/passages.json` with 10 languages (en/es/it/fr/de/pt/hi/bn/ar/zh), RTL for
+  Arabic, char-split for Chinese; model unchanged (language-independent eGeMAPS). Honest note added
+  to Methodology page (validated on Italian+English). (2) **VAD-gated live word highlighting**
+  (MonkeyType-style): words highlight as you speak (advance gated by mic energy in the meter loop),
+  fully on-device/private. Verified in Chrome (English/Bengali/Arabic-RTL). SW v6.
+  (3) **Dataset hunt** (GitHub/Kaggle/HF): no new clean, controlled, openly-downloadable raw-audio
+  corpus found. Added Figshare telephone vowel set (CC-BY, 8kHz, 81 spk) but honest vowel cross-DB
+  Italian->Figshare = AUC 0.39 (channel gap too large; `run_vowel_xdb.py`). HF candidates to check
+  later: `Hahad14/Parkinsons_Disease_Speech`, `ludobico/parkinson_corpus`. **NeuroVoz still the key
+  unlock for a higher honest number.**
 - 2026-07-21 (i): Robustness + feature upgrade (user concerns). (1) **Robust audio pipeline**:
   capture ~30s reading (full North Wind passage), quality gating (trim silence, reject clipping,
   require >=8s voiced), and **windowed median aggregation** (16 overlapping windows) so one bad

@@ -1,0 +1,22 @@
+{
+  "en": {"name": "English", "dir": "ltr", "rate": 2.4,
+    "text": "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveler take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveler fold his cloak around him; and at last the North Wind gave up the attempt."},
+  "es": {"name": "Espanol", "dir": "ltr", "rate": 2.6,
+    "text": "El viento del norte y el sol porfiaban sobre cual de ellos era el mas fuerte, cuando acerto a pasar un viajero envuelto en una amplia capa. Convinieron en que quien antes lograra obligar al viajero a quitarse la capa seria considerado el mas fuerte. El viento del norte soplo con todas sus fuerzas, pero cuanto mas soplaba, mas se arrebujaba el viajero en su capa."},
+  "it": {"name": "Italiano", "dir": "ltr", "rate": 2.6,
+    "text": "Si bisticciavano un giorno il vento di tramontana e il sole, l'uno pretendendo d'essere piu forte dell'altro, quando videro un viaggiatore che veniva innanzi avvolto nel mantello. I due litiganti convennero allora che si sarebbe ritenuto piu forte chi fosse riuscito per primo a far togliere il mantello al viaggiatore."},
+  "fr": {"name": "Francais", "dir": "ltr", "rate": 2.6,
+    "text": "La bise et le soleil se disputaient, chacun assurant qu'il etait le plus fort, quand ils virent un voyageur qui s'avancait, enveloppe dans son manteau. Ils convinrent que celui qui arriverait le premier a faire oter son manteau au voyageur serait regarde comme le plus fort."},
+  "de": {"name": "Deutsch", "dir": "ltr", "rate": 2.4,
+    "text": "Einst stritten sich Nordwind und Sonne, wer von ihnen beiden wohl der Starkere ware, als ein Wanderer, der in einen warmen Mantel gehullt war, des Weges daherkam. Sie wurden einig, dass derjenige fur den Starkeren gelten sollte, der den Wanderer zwingen wurde, seinen Mantel abzunehmen."},
+  "pt": {"name": "Portugues", "dir": "ltr", "rate": 2.6,
+    "text": "O vento norte e o Sol discutiam qual dos dois seria o mais forte, quando surgiu um viajante envolto numa capa. Chegaram a acordo que aquele que primeiro conseguisse obrigar o viajante a tirar a capa seria considerado o mais forte dos dois."},
+  "hi": {"name": "हिन्दी", "dir": "ltr", "rate": 2.2,
+    "text": "उत्तरी हवा और सूरज इस बात पर बहस कर रहे थे कि उन दोनों में से कौन अधिक शक्तिशाली है, तभी एक यात्री गर्म लबादा ओढ़े हुए वहाँ से गुज़रा। वे इस बात पर सहमत हुए कि जो पहले यात्री का लबादा उतरवा देगा, वही अधिक बलवान माना जाएगा।"},
+  "bn": {"name": "বাংলা", "dir": "ltr", "rate": 2.2,
+    "text": "উত্তরের বাতাস আর সূর্য তর্ক করছিল, তাদের মধ্যে কে বেশি শক্তিশালী, ঠিক তখনই একজন পথিক গরম চাদর জড়িয়ে সেখান দিয়ে যাচ্ছিল। তারা রাজি হলো যে, যে আগে পথিকের চাদর খুলিয়ে ফেলতে পারবে, তাকেই বেশি শক্তিশালী বলে ধরা হবে।"},
+  "ar": {"name": "العربية", "dir": "rtl", "rate": 2.4,
+    "text": "كانت ريح الشمال والشمس تتجادلان أيهما أقوى، عندما مرّ مسافر يلتف بعباءة دافئة. فاتفقتا على أن من ينجح أولاً في جعل المسافر يخلع عباءته يُعدّ الأقوى من الآخر."},
+  "zh": {"name": "中文", "dir": "ltr", "rate": 4.5, "charSplit": true,
+    "text": "北风和太阳正在争论谁更强大，这时一位裹着暖和斗篷的旅行者走了过来。他们商定，谁能先让旅行者脱下斗篷，谁就算更强大。"}
+}
