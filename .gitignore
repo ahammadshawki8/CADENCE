@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Data & caches (do not commit large audio / HF cache / content-addressed blobs)
+.cache/
+data/
+!data/.gitkeep
+*.wav
+*.flac
+*.mp3
+
+# Artifacts (models/embeddings/features can be large)
+artifacts/*.npy
+artifacts/*.npz
+artifacts/*.pt
+artifacts/*.pkl
+!artifacts/.gitkeep
+
+# OS / editor
+.DS_Store
+.ipynb_checkpoints/
+Thumbs.db

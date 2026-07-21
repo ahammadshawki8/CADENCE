@@ -1,0 +1,20 @@
+# Core ML
+torch>=2.2
+transformers>=4.40
+datasets>=2.19
+scikit-learn>=1.4
+numpy
+scipy
+pandas
+
+# Audio
+librosa>=0.10
+soundfile
+# praat-parselmouth  # optional; falls back to librosa features if no wheel for your Python
+
+# Explainability
+shap>=0.44
+matplotlib
+
+# App
+gradio>=4.0
