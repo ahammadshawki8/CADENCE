@@ -8,6 +8,7 @@
         "flagged": true,
         "risk_band": "elevated",
         "duration_sec": 57.0,
+        "narrative": "Your recording produced a screening indicator of 89%, which sits in the higher range. The patterns that most influenced this were how much you paused and your voice tone, which can resemble speech changes associated with Parkinson's. Even so, your voice clarity still looked closer to healthy speech. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
           {
             "feature": "pause_ratio",
@@ -103,6 +104,7 @@
         "flagged": false,
         "risk_band": "low",
         "duration_sec": 45.9,
+        "narrative": "Your recording produced a screening indicator of 16%, which sits in the lower range and is consistent with typical healthy speech. Measures such as how much you paused looked healthy, and although your articulation drew a little attention, nothing stood out strongly. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
           {
             "feature": "pause_ratio",

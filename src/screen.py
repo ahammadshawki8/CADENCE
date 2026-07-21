@@ -1,4 +1,4 @@
-"""End-to-end screening inference — the single entry point used by the web app.
+"""End-to-end screening inference - the single entry point used by the web app.
 
 screen(wav) : audio file/array -> {probability, risk band, explanation, acoustic
 report, disclaimer, model metadata}. Deliberately framed as a screening aid.
@@ -31,6 +31,60 @@ REPORT_KEYS = [
 ]
 _MIN_SECONDS = 2.0
 _bundle = None
+
+# Short, human names for the narrative paragraph (avoids clinical jargon).
+SHORT_NAME = {
+    "pause_ratio": "how much you paused", "n_segments_per_s": "your speaking rhythm",
+    "onset_rate": "your speaking rate", "hnr_db": "your voice clarity",
+    "jitter_rel": "your pitch steadiness", "shimmer_rel": "your loudness steadiness",
+    "f0_std": "your pitch variation", "f0_range": "your pitch range",
+    "f0_mean": "your average pitch", "voiced_frac": "how steadily you voiced sounds",
+}
+
+
+def _short(f):
+    if f["feature"].startswith("mfcc"):
+        return "your articulation"
+    if f["feature"].split("_")[0] in ("centroid", "rolloff", "bandwidth", "flatness", "zcr"):
+        return "your voice tone"
+    return SHORT_NAME.get(f["feature"], f["label"].lower())
+
+
+def _dedup(names):
+    seen, out = set(), []
+    for n in names:
+        if n not in seen:
+            seen.add(n); out.append(n)
+    return out
+
+
+def make_narrative(proba: float, band: str, factors: list) -> str:
+    """A warm, plain-language paragraph describing the result (no long dashes)."""
+    pct = round(proba * 100)
+    pd_names = _dedup(_short(f) for f in factors if f["shap"] > 0)[:2]
+    hc_names = _dedup(_short(f) for f in factors if f["shap"] < 0)[:1]
+    pd_str = " and ".join(pd_names) if pd_names else "several voice measures"
+    hc_str = hc_names[0] if hc_names else "some measures"
+    if band == "low":
+        lead = (f"Your recording produced a screening indicator of {pct}%, which sits in the lower "
+                f"range and is consistent with typical healthy speech.")
+        mid = (f"Measures such as {hc_str} looked healthy, and although {pd_str} drew a little "
+               f"attention, nothing stood out strongly.")
+    elif band == "elevated":
+        lead = (f"Your recording produced a screening indicator of {pct}%, which sits in the higher "
+                f"range.")
+        mid = (f"The patterns that most influenced this were {pd_str}, which can resemble speech "
+               f"changes associated with Parkinson's. Even so, {hc_str} still looked closer to "
+               f"healthy speech.")
+    else:
+        lead = (f"Your recording produced a screening indicator of {pct}%, which sits in the middle "
+                f"range and is not conclusive on its own.")
+        mid = (f"A few patterns, such as {pd_str}, leaned toward the signals we watch for, while "
+               f"{hc_str} looked more typical.")
+    tail = ("Please remember this is a quick screening from a single recording and cannot diagnose "
+            "any condition. If this result concerns you, a short conversation with a doctor is the "
+            "best next step.")
+    return f"{lead} {mid} {tail}"
 
 
 def _get_bundle():
@@ -82,14 +136,16 @@ def screen(wav, sr: int | None = None) -> dict:
 
     report = [{"label": lbl, "key": k, "value": round(float(feats[k]), 4)}
               for k, lbl in REPORT_KEYS]
+    band = _risk_band(proba, threshold)
 
     return {
         "ok": True,
         "probability_pd": round(proba, 4),
         "threshold": round(threshold, 4),
         "flagged": bool(proba >= threshold),
-        "risk_band": _risk_band(proba, threshold),
+        "risk_band": band,
         "duration_sec": round(duration, 1),
+        "narrative": make_narrative(proba, band, exp["top"]),
         "top_factors": exp["top"],
         "acoustic_report": report,
         "model": {

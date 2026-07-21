@@ -1,0 +1,16 @@
+{
+  "name": "Cadence Voice Screening",
+  "short_name": "Cadence",
+  "description": "A gentle, research-backed voice wellness check for signs of Parkinson's disease.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf9ff",
+  "theme_color": "#6c5ce7",
+  "icons": [
+    { "src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

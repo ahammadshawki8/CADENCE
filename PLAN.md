@@ -136,6 +136,13 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (g): App polish round DONE. Restrained 3-colour palette (indigo/teal/coral) for
+  "professional kawaii"; replaced all emojis with an inline SVG icon set; persistent home button on
+  every screen; footer info pages (About/credit for ahammadshawki8, Methodology, Architecture,
+  License); humane narrative paragraph on results (shared by web + PDF, generated in screen.py);
+  professional non-kawaii PDF report via fpdf2 (/api/report); PWA (manifest + service worker +
+  icons, installable/offline); removed all long dashes; added mobile media queries. Verified in
+  Chrome: welcome, architecture page, results+narrative, PDF download (200 OK), PWA endpoints.
 - 2026-07-21 (f): Web app milestone DONE. Kawaii animated SPA + FastAPI backend, full linear flow
   verified in-browser (welcome/consent/record/analyzing/results). Client-side WAV encoding, live
   meter, animated gauge, SHAP factor bars, report card, ethics panel, example path. Deploy scaffold

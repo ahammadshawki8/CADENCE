@@ -38,5 +38,11 @@ python src/train_baseline.py  # speaker-grouped baselines + confound controls
   `birgermoell/Italian_Parkinsons_Voice_and_Speech`.
 - Cross-database test sets (in progress): MDVR-KCL, NeuroVoz.
 
+## App
+A kawaii-but-professional web app (`app/`) lets anyone record a sentence and get an interpretable
+screening result with a plain-language summary, a downloadable professional PDF, and info pages
+(methodology, architecture, license). It is an installable PWA and works on mobile. Run locally
+with `python app/backend.py` then open http://127.0.0.1:7860.
+
 ## Status
 Active development for the ML Empowerment Build Challenge 2.0. See `PLAN.md` for progress.

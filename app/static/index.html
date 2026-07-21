@@ -2,30 +2,58 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cadence · your friendly voice check ✨</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Cadence · voice wellness check</title>
+<meta name="theme-color" content="#6c5ce7" />
+<meta name="description" content="A gentle, research-backed voice wellness check for signs of Parkinson's disease." />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Cadence" />
+<link rel="apple-touch-icon" href="/static/icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/static/style.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%A4%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
 </head>
 <body>
 
-<!-- floating pastel background -->
-<div class="bg" aria-hidden="true">
-  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
-  <span class="blob b4"></span>
-  <div class="sparkles" id="sparkles"></div>
-</div>
+<!-- ===== icon sprite ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+<symbol id="i-next" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v4"/><path d="M8 22h8"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="i-listen" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><path d="M4 15a2 2 0 0 1 3 1.7V19a2 2 0 0 1-3 1.7z"/><path d="M20 15a2 2 0 0 0-3 1.7V19a2 2 0 0 0 3 1.7z"/></symbol>
+<symbol id="i-read" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.4l8.8-8.7a5 5 0 0 0 0-7.1z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 5v5h-5"/><path d="M3 19v-5h5"/><path d="M20 10a8 8 0 0 0-14-3L3 10"/><path d="M4 14a8 8 0 0 0 14 3l3-3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M6 7h12"/><path d="M6 7l-3 7h6z"/><path d="M18 7l-3 7h6z"/><path d="M8 21h8"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></symbol>
+<symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.300-4.5-1.1-4.5-4.9 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.8-2.3 4.6-4.5 4.9.4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></symbol>
+<symbol id="i-mark" viewBox="0 0 24 24"><path d="M2 12h3l2.5-7 4 16 3.5-11 2 5H22"/></symbol>
+</defs></svg>
 
-<!-- progress dots (linear flow) -->
+<div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span></div>
+
+<!-- persistent home button -->
+<button class="homebtn" id="homeBtn" title="Home" aria-label="Home"><svg class="ic"><use href="#i-home"/></svg></button>
+
+<!-- progress dots -->
 <div class="steps" id="steps" aria-hidden="true">
-  <span data-step="welcome" class="on"></span>
-  <span data-step="learn"></span>
-  <span data-step="record"></span>
-  <span data-step="analyzing"></span>
-  <span data-step="results"></span>
+  <span data-step="welcome" class="on"></span><span data-step="learn"></span>
+  <span data-step="record"></span><span data-step="analyzing"></span><span data-step="results"></span>
 </div>
 
 <main id="app">
@@ -33,122 +61,204 @@
   <!-- 1 · WELCOME -->
   <section class="screen show" id="welcome">
     <div class="mascot" id="mascot">
-      <svg viewBox="0 0 220 200" width="180" height="164" aria-label="Cadi the voice sprite">
-        <ellipse class="shadow" cx="110" cy="182" rx="60" ry="10"></ellipse>
+      <svg viewBox="0 0 220 200" width="176" height="160" aria-label="Cadi">
+        <ellipse class="shadow" cx="110" cy="182" rx="58" ry="9"></ellipse>
         <g id="mascotBody">
           <path class="body" d="M110 26c46 0 78 32 78 74 0 40-30 70-78 70S32 140 32 100c0-42 32-74 78-74z"></path>
-          <ellipse class="cheek" cx="72" cy="112" rx="12" ry="8"></ellipse>
-          <ellipse class="cheek" cx="148" cy="112" rx="12" ry="8"></ellipse>
-          <g class="eyes">
-            <circle class="eye" cx="86" cy="92" r="9"></circle>
-            <circle class="eye" cx="134" cy="92" r="9"></circle>
-            <circle class="spark" cx="89" cy="89" r="3"></circle>
-            <circle class="spark" cx="137" cy="89" r="3"></circle>
-          </g>
-          <path class="mouth" d="M98 118 q12 12 24 0"></path>
-          <!-- little sound waves -->
-          <path class="wave w-l" d="M26 92 q-10 8 0 16"></path>
-          <path class="wave w-r" d="M194 92 q10 8 0 16"></path>
+          <ellipse class="cheek" cx="74" cy="112" rx="11" ry="7"></ellipse>
+          <ellipse class="cheek" cx="146" cy="112" rx="11" ry="7"></ellipse>
+          <g class="eyes"><circle class="eye" cx="87" cy="93" r="8.5"></circle><circle class="eye" cx="133" cy="93" r="8.5"></circle>
+            <circle class="spark" cx="90" cy="90" r="2.6"></circle><circle class="spark" cx="136" cy="90" r="2.6"></circle></g>
+          <path class="mouth" d="M99 117 q11 11 22 0"></path>
+          <path class="wave w-l" d="M27 93 q-9 7 0 15"></path><path class="wave w-r" d="M193 93 q9 7 0 15"></path>
         </g>
       </svg>
     </div>
     <h1 class="logo">Cadence</h1>
-    <p class="tag">a friendly little check-up for your <b>voice</b> ✨</p>
-    <p class="sub">Read one short sentence out loud. In a few seconds we’ll show you
-      gentle insights about your speech patterns — cute, clear, and yours.</p>
-    <button class="cta big" data-go="learn">Let’s go! <span class="emo">🌸</span></button>
-    <p class="mini">🔒 Your voice is analysed and then discarded. Nothing is stored.</p>
+    <p class="tag">a gentle wellness check for your <b>voice</b></p>
+    <p class="sub">Read one short sentence aloud. In a few seconds we’ll show you clear,
+      interpretable insights about your speech patterns.</p>
+    <button class="cta big" data-go="learn">Get started <svg class="ic"><use href="#i-next"/></svg></button>
+    <p class="mini"><svg class="ic sm"><use href="#i-lock"/></svg> Your voice is analysed on the spot and then discarded.</p>
   </section>
 
-  <!-- 2 · LEARN / CONSENT -->
+  <!-- 2 · LEARN -->
   <section class="screen" id="learn">
     <h2 class="title">How it works</h2>
     <div class="steps3">
-      <div class="stepcard pop" style="--d:.05s"><div class="ico">🗣️</div><h3>1 · Read</h3><p>Say one short sentence out loud, nice and natural.</p></div>
-      <div class="stepcard pop" style="--d:.15s"><div class="ico">🎧</div><h3>2 · We listen</h3><p>We measure pitch, rhythm & clarity — right on the page.</p></div>
-      <div class="stepcard pop" style="--d:.25s"><div class="ico">📊</div><h3>3 · Insights</h3><p>See a friendly voice report you can actually understand.</p></div>
+      <div class="stepcard pop" style="--d:.05s"><span class="ico"><svg class="ic"><use href="#i-read"/></svg></span><h3>1 · Read</h3><p>Say one short sentence out loud, nice and natural.</p></div>
+      <div class="stepcard pop" style="--d:.15s"><span class="ico"><svg class="ic"><use href="#i-listen"/></svg></span><h3>2 · We listen</h3><p>We measure pitch, rhythm and clarity right on the page.</p></div>
+      <div class="stepcard pop" style="--d:.25s"><span class="ico"><svg class="ic"><use href="#i-chart"/></svg></span><h3>3 · Insights</h3><p>Get a friendly voice report you can actually understand.</p></div>
     </div>
-    <div class="ethics soft">
-      <span class="badge">💛 please read</span>
-      <p>Cadence is a <b>research demo & screening aid — not a diagnosis</b>. It can’t tell you
-      whether you have any condition. If you’re ever worried about your health, please talk to a
-      real doctor. </p>
-      <label class="agree"><input type="checkbox" id="agree" /> <span>I understand — this is just a friendly check ✨</span></label>
+    <div class="ethics">
+      <span class="badge"><svg class="ic sm"><use href="#i-heart"/></svg> please read</span>
+      <p>Cadence is a <b>research demo and screening aid - not a diagnosis</b>. It cannot tell you
+      whether you have any condition. If you are ever worried about your health, please talk to a
+      qualified doctor.</p>
+      <label class="agree"><input type="checkbox" id="agree" /> <span>I understand this is a friendly, non-diagnostic check.</span></label>
     </div>
-    <button class="cta" id="toRecord" data-go="record" disabled>Continue <span class="emo">→</span></button>
+    <button class="cta" id="toRecord" data-go="record" disabled>Continue <svg class="ic"><use href="#i-next"/></svg></button>
   </section>
 
   <!-- 3 · RECORD -->
   <section class="screen" id="record">
-    <h2 class="title">Read this out loud 🎀</h2>
-    <div class="bubble pop">
-      <p id="prompt">“The North Wind and the Sun were disputing which was the stronger, when a
-        traveler came along wrapped in a warm cloak.”</p>
-    </div>
-
+    <h2 class="title">Read this out loud</h2>
+    <div class="bubble pop"><p id="prompt">“The North Wind and the Sun were disputing which was the
+      stronger, when a traveler came along wrapped in a warm cloak.”</p></div>
     <div class="recwrap">
       <div class="rings" id="rings"><span></span><span></span><span></span></div>
-      <button class="micbtn" id="micBtn" aria-label="record">
-        <svg viewBox="0 0 24 24" width="42" height="42"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M17 11a5 5 0 0 1-10 0M12 16v4M8 20h8" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
+      <button class="micbtn" id="micBtn" aria-label="record"><svg class="ic big"><use href="#i-mic"/></svg></button>
       <div class="meter" id="meter" aria-hidden="true"></div>
       <div class="timer" id="timer">tap the mic to start</div>
     </div>
-
     <audio id="playback" controls class="playback hidden"></audio>
-
-    <div class="rowbtns">
-      <button class="cta" id="analyzeBtn" data-go="analyzing" disabled>Analyse my voice 🌸</button>
-    </div>
-    <button class="linklike" id="exampleBtn">…or peek at an example ✨</button>
-    <p class="mini" id="recHint">psst — read for at least ~6 seconds for the best result 💫</p>
+    <button class="cta" id="analyzeBtn" data-go="analyzing" disabled>Analyse my voice <svg class="ic"><use href="#i-next"/></svg></button>
+    <button class="linklike" id="exampleBtn">or view an example result</button>
+    <p class="mini" id="recHint">Tip: read for at least ~6 seconds for the best result.</p>
   </section>
 
   <!-- 4 · ANALYZING -->
   <section class="screen" id="analyzing">
-    <div class="mascot listening"><svg viewBox="0 0 220 200" width="150" height="136"><use href="#mascotBody"/></svg></div>
+    <div class="mascot listening"><svg viewBox="0 0 220 200" width="140" height="128"><use href="#mascotBody"/></svg></div>
     <div class="eq" id="eq"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <h2 class="title" id="analyzeMsg">Listening to your voice…</h2>
-    <p class="sub">crunching pitch, rhythm & clarity ✨</p>
+    <p class="sub">measuring pitch, rhythm and clarity</p>
   </section>
 
   <!-- 5 · RESULTS -->
   <section class="screen" id="results">
     <div class="confetti" id="confetti" aria-hidden="true"></div>
-    <h2 class="title" id="resTitle">Your voice report 🌟</h2>
-
+    <h2 class="title" id="resTitle">Your voice report</h2>
     <div class="gaugewrap">
-      <svg class="gauge" viewBox="0 0 200 200" width="210" height="210">
+      <svg class="gauge" viewBox="0 0 200 200" width="208" height="208">
         <circle class="g-track" cx="100" cy="100" r="82"></circle>
         <circle class="g-fill" id="gFill" cx="100" cy="100" r="82"></circle>
       </svg>
-      <div class="gaugecenter">
-        <div class="gpct" id="gPct">0<span>%</span></div>
-        <div class="glabel" id="gLabel">screening indicator</div>
-      </div>
+      <div class="gaugecenter"><div class="gpct" id="gPct">0<span>%</span></div><div class="glabel">screening indicator</div></div>
     </div>
     <p class="verdict" id="verdict"></p>
+    <div class="narrative" id="narrative"></div>
 
-    <h3 class="sect">What your voice told us 🔍</h3>
+    <h3 class="sect"><svg class="ic sm"><use href="#i-search"/></svg> What your voice told us</h3>
     <div class="factors" id="factors"></div>
 
-    <h3 class="sect">Your voice report card 🃏</h3>
+    <h3 class="sect"><svg class="ic sm"><use href="#i-chart"/></svg> Your voice report card</h3>
     <div class="report" id="report"></div>
 
-    <div class="ethics soft result-ethics">
-      <span class="badge">💛 remember</span>
+    <div class="ethics result-ethics">
+      <span class="badge"><svg class="ic sm"><use href="#i-heart"/></svg> remember</span>
       <p id="resDisclaimer"></p>
     </div>
+    <div class="rowbtns">
+      <button class="cta ghost" id="pdfBtn"><svg class="ic"><use href="#i-download"/></svg> Download PDF report</button>
+      <button class="cta" id="againBtn" data-go="record"><svg class="ic"><use href="#i-refresh"/></svg> Try again</button>
+    </div>
+  </section>
 
-    <button class="cta big" id="againBtn" data-go="record">Try again 🔁</button>
+  <!-- ===== INFO PAGES (outside the linear flow) ===== -->
+  <section class="screen info" id="about">
+    <h2 class="title">About Cadence</h2>
+    <div class="doc">
+      <p><b>Cadence</b> is a research prototype that screens for signs of Parkinson’s disease from a
+      short voice recording, using interpretable acoustic biomarkers and honest, confound-aware
+      evaluation.</p>
+      <div class="devcard">
+        <span class="avatar"><svg class="ic"><use href="#i-user"/></svg></span>
+        <div><div class="devname">Ahammad Shawki</div>
+          <div class="devrole">Creator &amp; developer - research, modelling, design &amp; build</div>
+          <a class="ghlink" href="https://github.com/ahammadshawki8" target="_blank" rel="noopener">
+            <svg class="ic sm"><use href="#i-github"/></svg> github.com/ahammadshawki8</a></div>
+      </div>
+      <p class="muted">Built for the ML Empowerment Build Challenge 2.0. Source code:
+        <a href="https://github.com/ahammadshawki8/CADENCE" target="_blank" rel="noopener">CADENCE repository</a>.</p>
+    </div>
+    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> Back home</button>
+  </section>
+
+  <section class="screen info" id="methodology">
+    <h2 class="title">Methodology</h2>
+    <div class="doc">
+      <h4>The problem with “99% accurate”</h4>
+      <p>Many voice-based Parkinson’s classifiers report near-perfect accuracy. We show this is often
+      a mirage: on the Italian Parkinson’s corpus a model reaches an AUC of 1.00 even after
+      controlling for sample rate and age - for both deep embeddings and hand-crafted features -
+      because patients and controls were recorded under different conditions. The model detects the
+      recording “batch signature”, not the disease.</p>
+      <h4>Our approach</h4>
+      <ul>
+        <li><b>Interpretable biomarkers.</b> Language-independent phonatory and prosodic measures
+          (jitter, shimmer, harmonics-to-noise ratio, pitch variability, articulation rate, pausing).</li>
+        <li><b>Leakage-safe splits.</b> Cross-validation grouped by speaker - no speaker appears in
+          both train and test.</li>
+        <li><b>Honest cross-database validation.</b> Train on the Italian corpus, test on the
+          independently-collected English MDVR-KCL corpus.</li>
+        <li><b>Explainability.</b> SHAP attributes each screening result to specific voice biomarkers.</li>
+      </ul>
+      <h4>Result</h4>
+      <p>Cross-database (Italian → MDVR-KCL) the interpretable model transfers at
+      <b>AUC ≈ 0.72</b>, while deep embeddings collapse to ≈ 0.60. A modest, truthful number that
+      reflects real-world behaviour rather than an inflated single-dataset score.</p>
+    </div>
+    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> Back home</button>
+  </section>
+
+  <section class="screen info" id="architecture">
+    <h2 class="title">Architecture</h2>
+    <div class="doc">
+      <div class="arch">
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>Voice input</span><small>browser records, encodes 16 kHz WAV</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Feature extraction</span><small>librosa acoustic biomarkers</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Model</span><small>StandardScaler + logistic regression</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-search"/></svg><span>Explain</span><small>SHAP per-biomarker impact</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Report</span><small>web result + professional PDF</small></div>
+      </div>
+      <p class="muted">Backend: FastAPI (Python). Frontend: a single-page app with client-side audio
+      capture. Inference uses only acoustic features, so no deep-learning runtime is required to
+      serve the app. Trained offline on pooled Italian + MDVR-KCL reading recordings.</p>
+    </div>
+    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> Back home</button>
+  </section>
+
+  <section class="screen info" id="license">
+    <h2 class="title">Usage &amp; license</h2>
+    <div class="doc">
+      <h4>Software</h4>
+      <p>The Cadence source code is released under the <b>MIT License</b> © 2026 Ahammad Shawki
+      (<code>ahammadshawki8</code>). You may use, modify and share it with attribution.</p>
+      <h4>Datasets</h4>
+      <p>Model training used the <i>Italian Parkinson’s Voice and Speech</i> database and the
+      <i>MDVR-KCL</i> database (CC BY 4.0). No dataset audio is redistributed in this app. Please
+      cite the original dataset authors if you build on this work.</p>
+      <h4>Medical disclaimer</h4>
+      <p>Cadence is a research prototype and screening aid, <b>not a medical device</b>. It does not
+      diagnose any condition and must not replace professional medical advice.</p>
+    </div>
+    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> Back home</button>
   </section>
 
   <div class="toast" id="toast"></div>
 </main>
 
-<footer class="foot">Cadence · research demo for voice-based Parkinson’s screening ·
-  interpretable acoustic biomarkers · <span>not a medical device</span></footer>
+<footer class="foot">
+  <div class="footlinks">
+    <button data-info="about"><svg class="ic sm"><use href="#i-user"/></svg> About &amp; credit</button>
+    <button data-info="methodology"><svg class="ic sm"><use href="#i-doc"/></svg> Methodology</button>
+    <button data-info="architecture"><svg class="ic sm"><use href="#i-cpu"/></svg> Architecture</button>
+    <button data-info="license"><svg class="ic sm"><use href="#i-scale"/></svg> License</button>
+    <a href="https://github.com/ahammadshawki8/CADENCE" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-github"/></svg> GitHub</a>
+  </div>
+  <div class="footnote">Cadence · voice-based Parkinson’s screening · built by ahammadshawki8 · not a medical device</div>
+</footer>
 
 <script src="/static/app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  }
+</script>
 </body>
 </html>
