@@ -1,4 +1,4 @@
-# PLAN — "Cadence": Voice-Based Parkinson's Screening (ML Empowerment Build Challenge 2.0)
+# PLAN — "Cadence": Voice-Based Parkinson's Screening (hackathon submission)
 
 > **Session memory / source of truth.** If a session stops, read this file top-to-bottom, then
 > continue from the first unchecked item in the Execution Plan. Keep the Progress Log updated.
@@ -15,16 +15,16 @@
 
 ## Goal
 Win the **$1,000 Best Overall** (and stack adjacent categories: AI for Health, Best Use of ML,
-Best Web AI App, Most Impactful, Data-Driven Insights) at the ML Empowerment Build Challenge 2.0.
+Best Web AI App, Most Impactful, Data-Driven Insights) at the target hackathon.
 
 - **Deadline:** Jul 30, 2026, 9:00 PM PDT (~9 days from 2026-07-21). **Submit a day early.**
 - **Judging:** Technical 30% · Creativity 20% · Impact 20% · Design/UX 15% · Presentation 15%.
 
-## Why This Project Wins (evidence from Edition-1 gallery)
+## Why This Project Wins (evidence from a prior hackathon's winners gallery)
 - Winners = genuine ML depth in high-stakes domains (healthcare ≈ 5/12), often + explainability/
   fairness. Non-winners = "obvious app idea" convenience CRUD apps.
 - Ours: research-backed, real model with metrics, health + accessibility, explainable, honest
-  cross-database evaluation — and **no Edition-1 winner did speech/neuro screening** (originality).
+  cross-database evaluation — and **no winner in the reference gallery did speech/neuro screening** (originality).
 
 ## The Project — "Cadence"
 Web app that screens for **Parkinson's disease from a short reading of voice**, with

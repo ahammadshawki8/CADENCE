@@ -82,5 +82,5 @@ python app/backend.py       # run the app -> http://127.0.0.1:7860
 - **NeuroVoz** (Spanish) — access requested; a 3rd corpus that will strengthen the domain-adversarial model.
 
 ## Status
-Finalised for the ML Empowerment Build Challenge 2.0. Roadmap: fold in NeuroVoz (and PC-GITA) to add
+Finalised and ready for submission. Roadmap: fold in NeuroVoz (and PC-GITA) to add
 domains to the DANN and push the honest number higher. See `PLAN.md`.
