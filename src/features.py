@@ -18,6 +18,25 @@ _F0_MIN, _F0_MAX = 65.0, 400.0  # Hz, human speech range
 
 FEATURE_NAMES: list[str] = []  # filled on first extraction
 
+# Phonatory + prosodic + global-spectral measures that capture voice quality and
+# articulation dynamics largely independently of the spoken language. Used for
+# cross-lingual transfer (Italian -> English/Spanish), where phoneme-tied MFCC
+# *means* would not transfer.
+LANGUAGE_INDEPENDENT = [
+    "f0_mean", "f0_std", "f0_range", "voiced_frac",
+    "jitter_rel", "shimmer_rel", "hnr_db",
+    "pause_ratio", "n_segments_per_s", "onset_rate",
+    "centroid_mean", "centroid_std", "bandwidth_mean", "bandwidth_std",
+    "rolloff_mean", "rolloff_std", "flatness_mean", "flatness_std",
+    "zcr_mean", "zcr_std",
+] + [f"mfcc{i+1}_std" for i in range(13)]  # MFCC variability (dynamics), not absolute envelope
+
+
+def subset_indices(names: list[str], keep: list[str]) -> list[int]:
+    """Return column indices in `names` that are in `keep` (order of `names`)."""
+    kset = set(keep)
+    return [i for i, n in enumerate(names) if n in kset]
+
 
 def _safe(x, default=0.0):
     return float(x) if np.isfinite(x) else float(default)

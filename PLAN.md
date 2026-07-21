@@ -115,9 +115,21 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
   flags: `age_matched`, `native_16k_only`. Reports recording- & speaker-level AUC/F1/bal-acc.
 - Diagnostics: `src/check_confound.py` (task×label), `src/check_recording_confound.py` (SR/dur/RMS).
 
+## Cross-database results (headline) — see RESULTS.md
+- Within-Italian AUC ≈ 1.0 is a mirage (channel confound).
+- **Italian → MDVR-KCL (honest, cross-lingual):** acoustic-LI **AUC ≈ 0.72, bal-acc ≈ 0.72**;
+  wav2vec2 collapses to ≈ 0.60 (near chance). Interpretable biomarkers transfer; deep embeddings
+  do not. MDVR-KCL: 37 spk (21 HC/16 PD), reading + spontaneous, 44.1 kHz, CC-BY (downloaded).
+- NeuroVoz (Spanish, 3rd corpus) pending Zenodo access request (restricted; user submitting form).
+
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (d): Cross-database milestone DONE. Downloaded MDVR-KCL (open, CC-BY); built loader
+  (`src/external.py`), transfer harness (`src/xdb.py`), experiment runner (`src/run_xdb.py`), and
+  language-independent feature subset. Ran Italian↔MDVR: honest cross-lingual AUC ≈ 0.72 (acoustic-LI),
+  wav2vec2 collapses ≈ 0.60. Wrote `RESULTS.md`. NeuroVoz access requested (restricted). NEXT:
+  finalize model + explainability (SHAP), then build the web app/demo.
 - 2026-07-21 (c): Repo live — **https://github.com/ahammadshawki8/CADENCE (private)**. First clean
   commit `308cbbf` as `Ahammad Shawki <ahammadshawki8@gmail.com>` (no Claude trailer) pushed to
   `main`. `.gitignore` excludes `data/` + `artifacts/*.npz|npy`. gh authenticated via PAT.
