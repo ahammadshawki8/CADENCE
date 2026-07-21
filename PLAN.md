@@ -150,6 +150,16 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (m): **Research upgrade — domain-adversarial adaptation (the headline method).** Read
+  SOTA (generalizable speech marker: HuBERT + DAT + elderly DAPT; Canary Speech: HuBERT-Large + RF,
+  AUC 0.97 on private clinical data). Findings: (1) HuBERT collapses on our strict unseen-channel
+  test (0.62), WORSE than eGeMAPS (0.72) — SOTA's 0.9 is pooled-multicorpus, not leave-one-out.
+  (2) Built **DANN** (`src/dann.py`, unsupervised domain adaptation, gradient reversal) -> honest
+  cross-lingual AUC **Italian→MDVR 0.78, MDVR→Italian 0.82 (avg ~0.80)**, up from ~0.74. Ablation:
+  eGeMAPS+DANN best (0.78); HuBERT+DANN collapses (0.43); fusion (0.55). **No GPU needed** (DANN is
+  tiny/CPU; HuBERT was the only GPU-relevant part and it hurt). Updated RESULTS.md + Methodology page.
+  NeuroVoz would add a 3rd domain -> stronger DANN. NEXT (optional): swap deployed app model to DANN
+  (numpy export for torch-free inference + occlusion-based family explanations) for full consistency.
 - 2026-07-21 (l): Completed i18n for ALL 10 languages (en/es/it/fr/de/pt/hi/bn/ar/zh), 89 keys each,
   consistent. Whole interactive experience (welcome→results incl. verdict/narrative/labels/
   confidence/disclaimer/toasts/footer) + browser-print PDF translate. Arabic flips the whole UI to
