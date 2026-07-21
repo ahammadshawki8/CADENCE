@@ -27,10 +27,14 @@ Best Web AI App, Most Impactful, Data-Driven Insights) at the ML Empowerment Bui
   cross-database evaluation — and **no Edition-1 winner did speech/neuro screening** (originality).
 
 ## The Project — "Cadence"
-Web app that screens for **Parkinson's disease from ~30s of voice** using self-supervised speech
-embeddings (wav2vec2/HuBERT) + interpretable acoustic features, with **cross-lingual generalization
-testing** and **explainable acoustic evidence**. Framed strictly as a **screening aid, not a
-diagnosis**.
+Web app that screens for **Parkinson's disease from a short reading of voice**, with
+**cross-lingual generalization testing** and **explainable acoustic evidence**. Framed strictly as
+a **screening aid, not a diagnosis**.
+
+> **Pivot (post-confound):** the SHIPPED model uses **only interpretable acoustic biomarkers**
+> (language-independent subset). wav2vec2/HuBERT embeddings were evaluated and shown to COLLAPSE
+> cross-database (they memorise the recording channel), so they are used as a *cautionary
+> comparison* in the write-up, NOT in the deployed model. Inference is therefore torch-free.
 
 ### Anchor papers
 - medRxiv 2024.04.10.24305599 — wav2vec embeddings in PD speech, cross-database.
@@ -43,17 +47,20 @@ diagnosis**.
 - **CROSS-LINGUAL TEST:** NeuroVoz (Zenodo 10.5281/zenodo.10777657) — request access.
 - **PHONE-MIC / 2nd test:** MDVR-KCL. **Fallbacks:** UCI, Figshare vowel sets.
 
-### Technical core (the 30% story)
-Raw audio → 16kHz → frozen wav2vec2/HuBERT 768-d embeddings + acoustic features (jitter, shimmer,
-HNR, F0, MFCC via librosa/parselmouth) → light classifier (optionally supervised contrastive).
-**Subject-independent splits (no speaker leakage).** Cross-database eval reported honestly.
-Explainability via SHAP + temporal saliency. Fairness by age/sex.
+### Technical core (the 30% story) — as built
+Raw audio → 16kHz → **46 interpretable acoustic biomarkers via librosa** (jitter, shimmer, HNR, F0
+variability, speech rate, pause ratio, spectral, MFCC). Model = StandardScaler + Logistic
+Regression on the **33 language-independent** features. **Subject-independent splits (no speaker
+leakage).** Cross-database eval is the honest headline. Explainability via **SHAP LinearExplainer**
+(temporal saliency deferred). wav2vec2 embeddings kept only for the confound comparison.
 
-### Product
-In-browser record (/a/ + a sentence) → risk indicator + confidence + plain-language explanation +
-acoustic report + "consult a neurologist" guidance. Stack: Python, PyTorch, HF transformers/
-datasets, librosa, shap, Gradio (or FastAPI+React). Deploy: **HuggingFace Spaces** (free CPU) +
-public GitHub repo.
+### Product — as built
+In-browser record (read one sentence) → risk indicator + confidence gauge + plain-language
+**narrative paragraph** + SHAP factor bars + acoustic report card + strict "not a diagnosis" ethics
+panel + downloadable **professional PDF**. Info pages: About/credit, Methodology, Architecture,
+License. Stack: **FastAPI backend + custom animated SPA (installable PWA, mobile-responsive)**;
+inference torch-free (librosa + scikit-learn + shap + fpdf2). Deploy target: **HuggingFace Spaces**
+(free CPU, Dockerfile ready) + public GitHub repo.
 
 ## ⚠️ CRITICAL FINDING (2026-07-21) — Acquisition confound; cross-DB is mandatory
 The Italian dataset has a severe recording-condition confound between cohorts. Evidence:
@@ -83,31 +90,27 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 - To install as needed: gradio, shap, praat-parselmouth (fallback to librosa features if no wheel).
 
 ## Execution Plan (check off as done)
-- [x] **Day 0:** Scaffold repo; mirror PLAN.md; pull Italian dataset; confirm load. DONE.
-- [x] **Day 1 (pulled forward):** End-to-end pipeline built & validated: `data.py` (index w/ label/
-      speaker/task/orig_sr/duration), `embeddings.py` (wav2vec2 mean+std pool, cached), `features.py`
-      (46 acoustic biomarkers, cached), `train_baseline.py` (speaker-grouped StratifiedGroupKFold).
-      Ran baselines → **discovered the acquisition confound (see above).**
-- [ ] **Day 2 (NEXT):** Get a 2nd dataset (MDVR-KCL / NeuroVoz); build cross-database eval harness;
-      report honest cross-DB numbers as the headline. Request NeuroVoz access.
-- [ ] **Day 3–4:** Finalize confound-robust model (interpretable biomarkers ± domain-robust deep);
-      confound-control experiments table; pick final honest metric.
-- [x] **Day 2b:** Finalized deployable model (`src/model.py`, `artifacts/cadence_model.joblib`):
-      pooled Italian+MDVR reading, 33 language-independent biomarkers, honest leave-one-dataset-out
-      validation baked in (Italian→MDVR AUC 0.72). SHAP explainability (`src/explain.py`) +
-      end-to-end `src/screen.py` (wav → P(PD) + risk band + top biomarker factors + acoustic report
-      + disclaimer). Verified: PD sample 89% (elevated), HC sample 16% (low).
-- [x] **Day 3 (app):** Built + verified the kawaii animated web app. FastAPI backend (`app/backend.py`)
-      + custom SPA (`app/static/`): linear flow Welcome→How-it-works/consent→Record→Analyzing→
-      Results→Try-again. In-browser recording with client-side WAV encoding (no server ffmpeg),
-      live mic meter, animated gauge, SHAP factor bars, biomarker report card, ethics panel,
-      "peek at an example" path. Verified end-to-end in Chrome. Deploy files ready:
-      `app/requirements.txt` (serving-only, no torch), `Dockerfile` (HF Spaces port 7860).
-- [ ] **Day 6:** Deploy to HF Spaces (needs user's HF account/token). Run locally:
-      `python app/backend.py` -> http://127.0.0.1:7860
-- [ ] **Day 7:** Record 2–3 min demo video; screenshots.
-- [ ] **Day 8:** Devpost description (5 sections + social-impact statement) + README (metrics, citations).
-- [ ] **Day 9:** Buffer/polish; submit early.
+- [x] **Scaffold + data pipeline:** repo, `data.py` (index w/ label/speaker/task/orig_sr/duration),
+      `embeddings.py` (wav2vec2, cached), `features.py` (46 biomarkers, cached), `train_baseline.py`
+      (speaker-grouped CV). Baselines → **discovered the acquisition confound.**
+- [x] **Cross-database harness + honest metric:** downloaded MDVR-KCL; `external.py` + `xdb.py` +
+      `run_xdb.py` + language-independent subset. Headline: Italian→MDVR AUC ≈ 0.72 (biomarkers),
+      wav2vec2 collapses ≈ 0.60. `RESULTS.md` written.
+- [x] **Final model + explainability:** `model.py` (pooled Italian+MDVR, 33 LI biomarkers, saved
+      `cadence_model.joblib` with honest leave-one-dataset-out metadata + Youden threshold),
+      `explain.py` (SHAP + plain-language), `screen.py` (deployable wav→result API incl. narrative).
+- [x] **Web app + polish:** FastAPI backend + custom animated SPA. Linear flow
+      Welcome→Consent→Record→Analyzing→Results→Try-again; client-side WAV encoding; animated gauge;
+      SHAP factor bars; narrative paragraph; report card; ethics panel; example path. Pro-kawaii
+      3-colour palette; SVG icons (no emoji); home button; info pages (About/credit, Methodology,
+      Architecture, License); professional PDF export (`report_pdf.py` + `/api/report`); **installable
+      PWA** (manifest + service worker + icons); mobile-responsive; no long dashes. Verified in Chrome.
+- [ ] **NEXT — Deploy to HF Spaces:** needs user's HF login (`huggingface-cli login`). `Dockerfile` +
+      serving `app/requirements.txt` ready. Run locally: `python app/backend.py` → http://127.0.0.1:7860
+- [ ] **Presentation:** 2–3 min demo video + screenshots.
+- [ ] **Devpost:** description (5 sections + social-impact statement) + README polish (metrics, citations).
+- [ ] **Submit early** (deadline Jul 30, 9pm PDT). Buffer/polish.
+- [ ] **Optional:** fold in NeuroVoz (Spanish) as a 3rd validation corpus once Zenodo access is granted.
 
 ## Risks & Mitigations
 - Small datasets → subject-independent splits, light head, honest numbers.
@@ -117,14 +120,25 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 - Scope creep → ship core before extras.
 
 ## Files (source of truth for code)
-- `src/config.py` — paths, sample rate, model ids, dataset id.
-- `src/data.py` — download Italian tree (local_dir, no symlinks), build index parquet
-  (`data/index_italian.parquet`), `load_audio`. Metadata recovered from paths.
-- `src/embeddings.py` — frozen wav2vec2/HuBERT mean+std embeddings, disk cache in `artifacts/`.
-- `src/features.py` — 46 interpretable acoustic biomarkers (librosa-only), disk cache.
-- `src/train_baseline.py` — StratifiedGroupKFold by speaker; wav2vec2 or acoustic source;
-  flags: `age_matched`, `native_16k_only`. Reports recording- & speaker-level AUC/F1/bal-acc.
-- Diagnostics: `src/check_confound.py` (task×label), `src/check_recording_confound.py` (SR/dur/RMS).
+**Data & modelling (`src/`)**
+- `config.py` — paths, sample rate, model ids, dataset id.
+- `data.py` — download Italian tree (local_dir, no symlinks), build index parquet, `load_audio`.
+- `embeddings.py` — frozen wav2vec2/HuBERT mean+std embeddings, cached (confound comparison only).
+- `features.py` — 46 acoustic biomarkers (librosa) + `LANGUAGE_INDEPENDENT` subset, cached.
+- `train_baseline.py` — StratifiedGroupKFold by speaker; `age_matched`/`native_16k_only` flags.
+- `external.py` — MDVR-KCL loader → `index_mdvr.parquet`.
+- `xdb.py` / `run_xdb.py` — cross-database transfer harness + experiment runner (+ domain adaptation).
+- `model.py` — final pooled model, saves `artifacts/cadence_model.joblib` (+ threshold, background, metadata).
+- `explain.py` — SHAP LinearExplainer + plain-language biomarker descriptions.
+- `screen.py` — end-to-end wav→result API (proba, band, narrative, factors, report, disclaimer).
+- `report_pdf.py` — professional PDF (fpdf2). Diagnostics: `check_confound.py`, `check_recording_confound.py`.
+
+**Web app (`app/`)**
+- `backend.py` — FastAPI: `/`, `/api/screen`, `/api/examples`, `/api/report`, `/sw.js`, `/manifest.webmanifest`.
+- `static/` — `index.html`, `style.css`, `app.js`, `favicon.svg`, `manifest.webmanifest`, `sw.js`,
+  `icon-*.png`, `examples.json`. `gen_examples.py` precomputes example results.
+- `requirements.txt` (serving-only, torch-free) · root `Dockerfile` (HF Spaces port 7860).
+- Docs: `README.md`, `RESULTS.md`, `LICENSE` (MIT).
 
 ## Cross-database results (headline) — see RESULTS.md
 - Within-Italian AUC ≈ 1.0 is a mirage (channel confound).
@@ -136,6 +150,12 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 ## Progress Log
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
+- 2026-07-21 (h): UI fixes + PLAN cleanup. Friendlier "server offline" error message; SW cache
+  bumped (v4); fixed gauge label overflowing the ring; added fixed header fade so scrolled content
+  no longer clashes with the top dots. Went through PLAN line-by-line and de-staled it (project/
+  technical/product descriptions now match the shipped torch-free biomarker app; execution plan
+  checkboxes corrected; Files section completed). Remaining: HF Spaces deploy (needs user login),
+  demo video, Devpost writeup, submit.
 - 2026-07-21 (g): App polish round DONE. Restrained 3-colour palette (indigo/teal/coral) for
   "professional kawaii"; replaced all emojis with an inline SVG icon set; persistent home button on
   every screen; footer info pages (About/credit for ahammadshawki8, Methodology, Architecture,
