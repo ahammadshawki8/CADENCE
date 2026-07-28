@@ -9,9 +9,12 @@ venv/
 .cache/
 data/
 !data/.gitkeep
+# raw NeuroVoz download (zip + paper + metadata); extracted into data/external/
+Neurovoz/
 *.wav
 *.flac
 *.mp3
+*.zip
 
 # Artifacts (models/embeddings/features can be large)
 artifacts/*.npy

@@ -55,14 +55,24 @@ class DANN(nn.Module):
         return self.pd(f), self.dom(grad_reverse(f, lamb))
 
 
-def _features(dataset, kind="egemaps"):
+# Each corpus contributes its CONNECTED-SPEECH task so the three domains are
+# task-matched (the only honest way to compare recording channels, not content):
+#   Italian  -> PR   (reading passage)
+#   MDVR-KCL -> read (read text)
+#   NeuroVoz -> monologue (FREE spontaneous speech; NeuroVoz has no reading task)
+_INDEX = {"italian": "index_italian", "mdvr": "index_mdvr", "neurovoz": "index_neurovoz"}
+_DEFAULT_TASK = {"italian": "PR", "mdvr": "read", "neurovoz": "monologue"}
+
+
+def _load_index(dataset, task=None):
+    df = pd.read_parquet(DATA_DIR / f"{_INDEX[dataset]}.parquet")
+    return df[df.task == (task or _DEFAULT_TASK[dataset])].reset_index(drop=True)
+
+
+def _features(dataset, kind="egemaps", task=None):
     from egemaps import egemaps_for_paths
     from embeddings import embed_paths
-    if dataset == "italian":
-        df = pd.read_parquet(DATA_DIR / "index_italian.parquet"); df = df[df.task == "PR"]
-    else:
-        df = pd.read_parquet(DATA_DIR / "index_mdvr.parquet"); df = df[df.task == "read"]
-    df = df.reset_index(drop=True)
+    df = _load_index(dataset, task)
     paths = df.path.tolist()
     if kind == "egemaps":
         X, _ = egemaps_for_paths(paths)
@@ -125,7 +135,88 @@ def evaluate(source="italian", target="mdvr", seeds=range(8), kind="egemaps"):
     return np.mean(dann)
 
 
+def _features_vowel(dataset, vowel="A"):
+    """Sustained-vowel eGeMAPS features for a language-independent phonation comparison.
+    Italian task 'V<vowel>' vs NeuroVoz task 'vowel' filtered to that vowel letter."""
+    from egemaps import egemaps_for_paths
+    if dataset == "italian":
+        df = pd.read_parquet(DATA_DIR / "index_italian.parquet")
+        df = df[df.task == f"V{vowel}"].reset_index(drop=True)
+    else:  # neurovoz
+        df = pd.read_parquet(DATA_DIR / "index_neurovoz.parquet")
+        df = df[(df.task == "vowel") & (df.vowel == vowel)].reset_index(drop=True)
+    X, _ = egemaps_for_paths(df.path.tolist())
+    return X.astype(np.float32), df.label.values.astype(int)
+
+
+def evaluate_vowel(source="italian", target="neurovoz", vowel="A", seeds=range(8)):
+    """Cross-lingual sustained-vowel /a/ transfer (Italian <-> NeuroVoz). Purely phonatory,
+    no linguistic content -> the cleanest test that the model measures voice, not language."""
+    Xs, ys = _features_vowel(source, vowel); Xt, yt = _features_vowel(target, vowel)
+    sc = StandardScaler().fit(Xs)
+    base = LogisticRegression(C=0.1, max_iter=5000, class_weight="balanced").fit(sc.transform(Xs), ys)
+    base_auc = roc_auc_score(yt, base.predict_proba(sc.transform(Xt))[:, 1])
+    plain, dann = [], []
+    for s in seeds:
+        plain.append(roc_auc_score(yt, train_dann(Xs, ys, Xt, seed=s, adapt=False)))
+        dann.append(roc_auc_score(yt, train_dann(Xs, ys, Xt, seed=s, adapt=True)))
+    print(f"\n=== VOWEL /{vowel.lower()}/  {source} -> {target}  (source n={len(ys)}, target n={len(yt)}) ===")
+    print(f"  logistic baseline         AUC {base_auc:.3f}")
+    print(f"  MLP (no adaptation)       AUC {np.mean(plain):.3f} +/- {np.std(plain):.3f}")
+    print(f"  DANN (domain-adversarial) AUC {np.mean(dann):.3f} +/- {np.std(dann):.3f}  <- channel-invariant")
+    return np.mean(dann)
+
+
+def evaluate_lodo(target, kind="egemaps", seeds=range(8)):
+    """Leave-one-DOMAIN-out: pool the two other corpora as the labelled source, DANN-adapt
+    to the held-out corpus (its labels never used), report AUC on it. The strongest honest
+    test — the model must survive TWO unseen->one-unseen channel shifts at once."""
+    sources = [d for d in ("italian", "mdvr", "neurovoz") if d != target]
+    Xs_parts, ys_parts = [], []
+    for s in sources:
+        Xi, yi = _features(s, kind)
+        Xs_parts.append(Xi); ys_parts.append(yi)
+    Xs = np.vstack(Xs_parts); ys = np.concatenate(ys_parts)
+    Xt, yt = _features(target, kind)
+
+    sc = StandardScaler().fit(Xs)
+    base = LogisticRegression(C=0.1, max_iter=5000, class_weight="balanced").fit(sc.transform(Xs), ys)
+    bp = base.predict_proba(sc.transform(Xt))[:, 1]
+    base_auc = roc_auc_score(yt, bp)
+
+    plain, dann = [], []
+    for s in seeds:
+        plain.append(roc_auc_score(yt, train_dann(Xs, ys, Xt, seed=s, adapt=False)))
+        dann.append(roc_auc_score(yt, train_dann(Xs, ys, Xt, seed=s, adapt=True)))
+    print(f"\n=== [{'+'.join(sources)}] -> {target} [{kind}]  (source n={len(ys)}, target n={len(yt)}) ===")
+    print(f"  logistic baseline         AUC {base_auc:.3f}")
+    print(f"  MLP (no adaptation)       AUC {np.mean(plain):.3f} +/- {np.std(plain):.3f}")
+    print(f"  DANN (domain-adversarial) AUC {np.mean(dann):.3f} +/- {np.std(dann):.3f}  <- channel-invariant")
+    return np.mean(dann)
+
+
 if __name__ == "__main__":
-    for kind in ("egemaps", "hubert", "fusion"):
-        evaluate("italian", "mdvr", kind=kind)
-        evaluate("mdvr", "italian", kind=kind)
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "all"
+
+    if mode in ("all", "pairwise"):
+        print("\n########## PAIRWISE (connected speech, eGeMAPS) ##########")
+        for a, b in [("italian", "mdvr"), ("mdvr", "italian"),
+                     ("italian", "neurovoz"), ("neurovoz", "italian"),
+                     ("mdvr", "neurovoz"), ("neurovoz", "mdvr")]:
+            evaluate(a, b, kind="egemaps")
+
+    if mode in ("all", "lodo"):
+        print("\n########## LEAVE-ONE-DOMAIN-OUT (train on 2, adapt to 3rd) ##########")
+        for tgt in ("italian", "mdvr", "neurovoz"):
+            evaluate_lodo(tgt, kind="egemaps")
+
+    if mode in ("all", "vowel"):
+        print("\n########## CROSS-LINGUAL SUSTAINED VOWEL /a/ (Italian <-> NeuroVoz) ##########")
+        evaluate_vowel("italian", "neurovoz")
+        evaluate_vowel("neurovoz", "italian")
+
+    if mode == "ablation":  # original 2-corpus feature ablation
+        for kind in ("egemaps", "hubert", "fusion"):
+            evaluate("italian", "mdvr", kind=kind)
+            evaluate("mdvr", "italian", kind=kind)

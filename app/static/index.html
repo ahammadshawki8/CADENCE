@@ -195,22 +195,27 @@
           (jitter, shimmer, harmonics-to-noise ratio, pitch variability, articulation rate, pausing).</li>
         <li><b>Leakage-safe splits.</b> Cross-validation grouped by speaker - no speaker appears in
           both train and test.</li>
-        <li><b>Honest cross-database validation.</b> Train on the Italian corpus, test on the
-          independently-collected English MDVR-KCL corpus (a different language and microphone).</li>
+        <li><b>Honest cross-database validation.</b> Validated across three independently-collected
+          corpora in three languages - Italian, English (MDVR-KCL) and Spanish (NeuroVoz) - training
+          on one and testing on another, each a different language and microphone.</li>
         <li><b>Domain-adversarial adaptation.</b> In cross-database validation, a gradient-reversal
           domain classifier that forces channel-invariant features lifts our honest cross-lingual AUC
-          from ~0.72 to <b>~0.80</b> — relying on the disease signal, not the recording equipment. It
-          becomes the deployed model as more clean corpora are added.</li>
+          from ~0.72 to <b>~0.80</b> on the task-matched reading test - relying on the disease signal,
+          not the recording equipment.</li>
         <li><b>Explainability.</b> SHAP attributes each screening result to specific voice biomarkers.</li>
         <li><b>Language-independent.</b> Cadence measures voice quality and prosody, not words, so it
           works across languages; the reading passage is offered in several languages. Validated so
-          far on Italian and English, with more languages added as clean corpora become available.</li>
+          far on Italian, English and Spanish.</li>
       </ul>
       <h4>Result</h4>
       <p>On the strict unseen-channel test, deep speech embeddings (wav2vec2 / HuBERT) collapse to
       ≈ 0.60, while interpretable biomarkers transfer at ≈ 0.72 and, with domain-adversarial
-      adaptation, reach <b>≈ 0.80 cross-lingual AUC</b>. These are honest numbers that reflect
-      real-world behaviour across languages and microphones, not inflated single-dataset scores.</p>
+      adaptation, reach <b>≈ 0.80 cross-lingual AUC</b> on connected reading speech. Two honest checks
+      keep us grounded: pooling several corpora generalises to a held-out corpus at ≈ 0.69-0.76 on its
+      own, and the classic sustained-vowel /a/ biomarker does <b>not</b> transfer across corpora
+      (≈ 0.34-0.46, at or below chance) - proof that within-corpus vowel "accuracy" is the microphone,
+      not the disease. These are honest numbers across languages and microphones, not inflated
+      single-dataset scores.</p>
     </div>
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
@@ -234,8 +239,8 @@
       windows and combined by median for robustness. Inference is torch-free (no deep-learning runtime
       needed to serve). The live app ships the interpretable logistic model, trained offline on pooled
       Italian + MDVR-KCL recordings. Our research additionally uses a domain-adversarial network
-      (gradient reversal) to learn channel-invariant features (~0.80 cross-lingual AUC); this is the
-      planned deployed model as more clean corpora are added.</p>
+      (gradient reversal) to learn channel-invariant features (~0.80 cross-lingual AUC), validated
+      across three corpora and three languages (Italian, English, Spanish).</p>
     </div>
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
@@ -247,9 +252,10 @@
       <p>The Cadence source code is released under the <b>MIT License</b> © 2026 Ahammad Shawki
       (<code>ahammadshawki8</code>). You may use, modify and share it with attribution.</p>
       <h4>Datasets</h4>
-      <p>Model training used the <i>Italian Parkinson’s Voice and Speech</i> database and the
-      <i>MDVR-KCL</i> database (CC BY 4.0). No dataset audio is redistributed in this app. Please
-      cite the original dataset authors if you build on this work.</p>
+      <p>Model training and validation used the <i>Italian Parkinson’s Voice and Speech</i> database,
+      the <i>MDVR-KCL</i> database (CC BY 4.0), and the <i>NeuroVoz</i> database (Castilian Spanish).
+      No dataset audio is redistributed in this app. Please cite the original dataset authors if you
+      build on this work.</p>
       <h4>Medical disclaimer</h4>
       <p>Cadence is a research prototype and screening aid, <b>not a medical device</b>. It does not
       diagnose any condition and must not replace professional medical advice.</p>

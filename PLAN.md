@@ -47,8 +47,9 @@ a **screening aid, not a diagnosis**.
 - **CROSS-DB TEST (have):** MDVR-KCL (English, mobile, CC-BY, downloaded).
 - **TESTED, doesn't help:** Figshare telephone vowels (8kHz gap → 0.39). Hahad14 HF = MDVR mirror.
   Kaggle sets (UCI Oxford, Sakar) = feature-only, no raw audio, unusable. AMP-PD/FoG = non-voice.
-- **PENDING (requested):** NeuroVoz (Zenodo 10.5281/zenodo.10777657, restricted, needs institutional
-  email). PC-GITA (email Orozco-Arroyave, UdeA) — NOT requested yet (mention in "what's next").
+- **HAVE (3rd corpus, Spanish):** NeuroVoz (Zenodo 10.5281/zenodo.10777657) — access granted, integrated.
+  108 subjects, 44.1 kHz, tasks: sustained vowels, DDK, 16 listen-and-repeat words, FREE monologue.
+- **NOT pursued:** PC-GITA (email Orozco-Arroyave, UdeA) — left as "what's next" for the writeup.
 
 ### Technical core (the 30% story) — as built
 Raw audio → 16kHz → **eGeMAPS acoustic functionals (openSMILE, 88)**. Shipped model = StandardScaler
@@ -118,8 +119,11 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 - [x] **Research upgrade:** **Domain-Adversarial Network** (`src/dann.py`) → honest cross-lingual
       AUC ~0.80. Studied SOTA + competitors (Canary Speech, academic DANN, Kaggle). No GPU needed.
 - [x] **Finalisation pass:** README, PLAN, info pages de-staled; all consistent. (this checkpoint)
-- [ ] **WAITING (1–2 days):** NeuroVoz access. If granted → add as 3rd DANN domain, retrain, redeploy
-      the domain-adversarial model into the app (numpy export for torch-free inference), push number up.
+- [x] **NeuroVoz integrated (3rd corpus, 3rd language — Spanish).** Access granted; `neurovoz_v3.zip`
+      (962 MB, 3639 files) loaded via `build_neurovoz_index()`. Honest outcome: task-matched reading
+      (Italian↔MDVR) headline holds at ~0.80; leave-one-corpus-out ~0.69–0.76 (pooling ≈ DANN — DANN's
+      win is single-source→target, not pooled multi-source); **sustained vowel /a/ does NOT transfer
+      (~0.34–0.46, negative control)** — the sharpest confirmation of the confound thesis. See RESULTS.md §4.
 - [ ] **NEXT — Deploy to HF Spaces:** needs user's HF login (`huggingface-cli login`). `Dockerfile` +
       serving `app/requirements.txt` ready. Run locally: `python app/backend.py` → http://127.0.0.1:7860
 - [ ] **Presentation / Devpost writeup:** 2–3 min demo video + screenshots + the honest-rigor +
@@ -160,10 +164,24 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
 - Within-Italian AUC ≈ 1.0 is a mirage (channel confound).
 - Deep embeddings (wav2vec2/HuBERT) collapse cross-DB to ≈ 0.60; interpretable eGeMAPS transfer at
   ≈ 0.72; **eGeMAPS + Domain-Adversarial Network → ≈ 0.80** (Italian→MDVR 0.78, MDVR→Italian 0.82).
-- Corpora: Italian (61 spk), MDVR-KCL (37 spk, CC-BY). Figshare telephone vowels tested → 0.39 (8kHz
-  channel gap too big). NeuroVoz (Spanish) access requested; a 3rd domain would strengthen the DANN.
+- **3 corpora, 3 languages:** Italian (61 spk), MDVR-KCL (37 spk, English, CC-BY), NeuroVoz (108 subj,
+  Spanish). Leave-one-corpus-out ≈ 0.69–0.76 (pooling supplies robustness; DANN's win is
+  single-source→target, not pooled). **Sustained vowel /a/ Italian↔NeuroVoz = 0.34–0.46 (negative
+  control — classic biomarker is pure channel).** Figshare telephone vowels → 0.39 (8kHz gap too big).
 
 ## Progress Log
+- 2026-07-28: **NeuroVoz integrated (3rd corpus / 3rd language) + msrOS adopted.** Access granted;
+  `neurovoz_v3.zip` (962 MB, 3639 wav, 44.1 kHz, 108 subj) → `build_neurovoz_index()` in `external.py`
+  (`index_neurovoz.parquet`). Extended `dann.py`: dataset+task-aware `_features`, `evaluate_lodo`
+  (leave-one-corpus-out), `evaluate_vowel` (cross-lingual sustained /a/). **Honest results:** pairwise
+  reading Italian↔MDVR still ~0.80; NeuroVoz connected task is spontaneous monologue (task shift +
+  imbalanced 23 PD) so onto-NeuroVoz is hard (~0.56–0.60), DANN lifts all out-of-NeuroVoz directions
+  (e.g. NeuroVoz→Italian 0.60→0.68). Leave-one-corpus-out ~0.69–0.76 (pooling ≈ DANN; adversarial
+  adaptation adds nothing over pooled diverse sources — mature, honest finding). **Sustained vowel /a/
+  cross-lingual = 0.34–0.46 (≤ chance): negative control proving the confound even for the canonical
+  biomarker.** Updated RESULTS.md (§4), README, PLAN. Also adopted msrOS: wrote `CLAUDE.md` + `docs/
+  STATE.md`. The number didn't rise, but the SCIENCE is stronger: 3-language external validity + a
+  decisive negative control. NEXT: Devpost writeup + HF Spaces deploy.
 - 2026-07-21 (a): Plan approved. Env verified (py3.14). Fixed: numpy pinned <2.4 (numba/librosa),
   soundfile installed, HF symlink issue → `local_dir` download.
 - 2026-07-21 (n): **FINALISATION checkpoint (pre-submission).** Removed the word-highlight feature

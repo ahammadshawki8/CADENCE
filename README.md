@@ -27,9 +27,17 @@ independently-collected one).
 | **eGeMAPS + Domain-Adversarial Network (DANN)** | **~0.80** |
 
 We don't just *diagnose* the confound — a gradient-reversal domain classifier makes the features
-**channel-invariant**, lifting honest cross-lingual AUC to ~0.80. Deep speech embeddings (what most
-SOTA/commercial systems use) reach ~0.9 only under softer *pooled* validation; on our strict test
-they collapse. See `RESULTS.md` for the full tables and ablations.
+**channel-invariant**, lifting honest cross-lingual AUC to ~0.80 (task-matched reading). Deep speech
+embeddings (what most SOTA/commercial systems use) reach ~0.9 only under softer *pooled* validation;
+on our strict test they collapse.
+
+The screen is validated across **three independently-collected corpora in three languages** (Italian,
+English, Spanish/NeuroVoz). Two honest findings sharpen the story: (1) once several diverse corpora
+are pooled, that diversity alone gives ~0.69–0.76 on a held-out corpus and adversarial adaptation
+adds little on top — DANN's clear win is the single-source→single-target case; (2) the field's
+favourite biomarker, the **sustained vowel /a/, does not transfer at all** across corpora (AUC ~0.34–
+0.46, at/below chance) — a decisive demonstration that within-corpus vowel "accuracy" is the
+microphone, not the disease. See `RESULTS.md` for the full tables and ablations.
 
 ## Method
 Raw audio → 16 kHz → **eGeMAPS** acoustic functionals (openSMILE) → StandardScaler + Logistic
@@ -78,9 +86,11 @@ python app/backend.py       # run the app -> http://127.0.0.1:7860
 ## Data
 - **Italian Parkinson's Voice and Speech** (primary) — HuggingFace `birgermoell/Italian_Parkinsons_Voice_and_Speech`.
 - **MDVR-KCL** (English, mobile) — cross-database test corpus (CC BY).
+- **NeuroVoz** (Spanish) — 3rd corpus, 108 subjects, 44.1 kHz (Zenodo, restricted access granted).
+  Adds a 3rd language and a leave-one-corpus-out test; its spontaneous monologue + sustained-vowel
+  controls are reported honestly in `RESULTS.md`.
 - **Figshare telephone vowels** — tested; 8 kHz channel gap too large to help (documented honestly).
-- **NeuroVoz** (Spanish) — access requested; a 3rd corpus that will strengthen the domain-adversarial model.
 
 ## Status
-Finalised and ready for submission. Roadmap: fold in NeuroVoz (and PC-GITA) to add
-domains to the DANN and push the honest number higher. See `PLAN.md`.
+Finalised, with three-corpus / three-language validation (Italian, English, Spanish). Roadmap:
+add PC-GITA as a 4th corpus; explore a task-matched reading protocol for NeuroVoz. See `PLAN.md`.

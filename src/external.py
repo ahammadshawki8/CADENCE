@@ -5,6 +5,13 @@ MDVR-KCL: mobile-phone recordings, English. Documented layout:
             /SpontaneousDialogue/{HC,PD}/...
 Label from folder/filename token; speaker from the ID## prefix; task from the
 ReadText / SpontaneousDialogue folder. Verified against the real tree at runtime.
+
+NeuroVoz: Castilian Spanish, 44.1 kHz, 108 subjects. Flat layout:
+    <root>/data/audios/<HC|PD>_<TASK>_<ID>.wav
+Label from the leading HC/PD token; speaker from the trailing numeric ID; task from
+the middle token (sustained vowels A1..U3, DDK PATAKA, 16 listen-and-repeat words,
+FREE monologue). The FREE monologue is our connected-speech bridge to Italian (PR) and
+MDVR (read); the vowels give a language-independent phonation comparison to Italian (VA).
 """
 from __future__ import annotations
 
@@ -17,6 +24,8 @@ from config import DATA_DIR
 
 _ID_RE = re.compile(r"(ID\d+)", re.IGNORECASE)
 MDVR_ROOT = DATA_DIR / "external" / "mdvr_kcl"
+NEUROVOZ_ROOT = DATA_DIR / "external" / "neurovoz"
+_VOWEL_RE = re.compile(r"^[AEIOU]\d+$")
 
 
 def _mdvr_label(path_parts: tuple[str, ...], fname: str) -> int:
@@ -70,6 +79,56 @@ def build_mdvr_index(root: Path | None = None) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values(["task", "label", "speaker"]).reset_index(drop=True)
 
 
+def _neurovoz_task(token: str) -> str:
+    t = token.upper()
+    if _VOWEL_RE.match(t):
+        return "vowel"
+    if t == "FREE":
+        return "monologue"
+    if t == "PATAKA":
+        return "ddk"
+    return "word"
+
+
+def build_neurovoz_index(root: Path | None = None) -> pd.DataFrame:
+    """Index the NeuroVoz corpus from filenames: <HC|PD>_<TASK>_<ID>.wav.
+
+    ``vowel_letter`` is filled for sustained-vowel tasks (A/E/I/O/U) so a
+    language-independent /a/ comparison to the Italian VA task is possible.
+    """
+    root = Path(root or NEUROVOZ_ROOT)
+    import soundfile as sf
+
+    rows = []
+    for wav in root.rglob("*.wav"):
+        fname = wav.name
+        stem = fname[:-4]
+        parts = stem.split("_")
+        if len(parts) < 3:
+            continue  # not the expected <cond>_<task>_<id> scheme
+        cond, token, sid = parts[0], parts[1], parts[-1]
+        label = 1 if cond.upper() == "PD" else 0
+        task = _neurovoz_task(token)
+        vowel = token[0].upper() if task == "vowel" else ""
+        try:
+            si = sf.info(str(wav))
+            orig_sr, dur = si.samplerate, si.duration
+        except Exception:
+            orig_sr, dur = -1, float("nan")
+        rows.append({
+            "path": str(wav),
+            "dataset": "neurovoz",
+            "label": label,
+            "speaker": f"neurovoz::{sid}",
+            "task": task,
+            "vowel": vowel,
+            "orig_sr": orig_sr,
+            "duration": dur,
+            "filename": fname,
+        })
+    return pd.DataFrame(rows).sort_values(["task", "label", "speaker"]).reset_index(drop=True)
+
+
 if __name__ == "__main__":
     df = build_mdvr_index()
     print(f"MDVR rows: {len(df)}")
@@ -84,3 +143,17 @@ if __name__ == "__main__":
         print("  ", Path(p).relative_to(MDVR_ROOT))
     df.to_parquet(DATA_DIR / "index_mdvr.parquet")
     print("\nsaved index_mdvr.parquet")
+
+    nv = build_neurovoz_index()
+    print(f"\n\n=== NeuroVoz rows: {len(nv)} ===")
+    print("\n== label x task (files) ==")
+    print(pd.crosstab(nv.task, nv.label.map({0: "HC", 1: "PD"})))
+    print("\n== speakers per class (all tasks) ==")
+    print(nv.groupby(nv.label.map({0: "HC", 1: "PD"})).speaker.nunique())
+    print("\n== monologue (FREE) speakers per class ==")
+    mono = nv[nv.task == "monologue"]
+    print(mono.groupby(mono.label.map({0: "HC", 1: "PD"})).speaker.nunique())
+    print("\n== sample rate ==")
+    print(nv.orig_sr.value_counts())
+    nv.to_parquet(DATA_DIR / "index_neurovoz.parquet")
+    print("\nsaved index_neurovoz.parquet")

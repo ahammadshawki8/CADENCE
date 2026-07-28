@@ -64,13 +64,60 @@ between the two recording channels. The PD head then transfers to the unseen cha
 systems use (e.g. Canary Speech) — reach ~0.9 only under *pooled multi-corpus* validation; on a
 strict *unseen-channel* test they collapse to ~0.6. Our interpretable-biomarker + domain-adversarial
 approach reaches **~0.80 on the strict test**, which is both honest and hard to beat without more
-clean corpora. Adding a 3rd corpus (NeuroVoz) gives the DANN a third domain and is expected to lift
-this further. No GPU or fine-tuning required — the DANN is tiny and CPU-trained.
+clean corpora. No GPU or fine-tuning required — the DANN is tiny and CPU-trained.
+
+## 4. A third corpus, a third language: NeuroVoz (Spanish)
+We added **NeuroVoz** (Castilian Spanish, 108 subjects, 44.1 kHz) as a third, independently-collected
+corpus — so the honest test now spans **three languages** (Italian, English, Spanish). NeuroVoz has
+**no reading passage**, so its connected-speech task is a **spontaneous monologue** (FREE); its
+comparison to Italian/MDVR *reading* therefore mixes a task shift with the channel shift, and it is
+also class-imbalanced (23 PD vs 53 HC monologues). We report it honestly rather than omit it.
+
+**Pairwise connected speech (eGeMAPS + DANN, AUC):**
+
+| Direction | Logistic baseline | DANN |
+|---|---|---|
+| Italian → MDVR-KCL (read↔read) | 0.723 | **0.783** |
+| MDVR-KCL → Italian (read↔read) | 0.755 | **0.822** |
+| NeuroVoz → Italian | 0.596 | **0.682** |
+| NeuroVoz → MDVR-KCL | 0.628 | **0.690** |
+| Italian → NeuroVoz | 0.595 | 0.603 |
+| MDVR-KCL → NeuroVoz | 0.672 | 0.562 |
+
+DANN lifts every direction *out of* NeuroVoz; predicting *onto* the imbalanced Spanish monologue is
+the hardest cell (~0.56–0.60), consistent with the added task shift.
+
+**Leave-one-CORPUS-out (train on 2 corpora, adapt to the unseen 3rd):**
+
+| Held-out corpus | Pooled logistic baseline | DANN |
+|---|---|---|
+| Italian | 0.692 | 0.568 |
+| MDVR-KCL | **0.759** | 0.740 |
+| NeuroVoz | 0.692 | 0.660 |
+
+A mature, honest finding: **once you pool two diverse corpora as the source, the pooling itself
+supplies domain robustness** (unseen-corpus AUC ~0.69–0.76), and adversarial adaptation adds nothing
+on top (here slightly negative). DANN's clear win is in the **single-source → single-target** regime
+(Section 3); it is not a silver bullet when diverse source data is already available.
+
+**Negative control — the classic biomarker fails to transfer.** Sustained vowel **/a/** is the most
+widely used PD voice marker. Across Italian (VA) ↔ NeuroVoz (A):
+
+| Direction (sustained /a/) | Logistic baseline | DANN |
+|---|---|---|
+| Italian → NeuroVoz | 0.433 | 0.455 |
+| NeuroVoz → Italian | 0.431 | 0.339 |
+
+**At or below chance, and DANN cannot rescue it.** This is the sharpest confirmation of the whole
+thesis: within-corpus sustained-vowel "success" is the recording channel, not the disease — the
+discriminative direction even *flips* between corpora. Connected speech transfers (~0.80); the vowel
+does not. Papers reporting high within-corpus vowel accuracy are measuring the microphone.
 
 ## Reproduce
 ```bash
 python src/data.py          # Italian corpus
-python src/external.py      # MDVR-KCL (after unzipping into data/external/mdvr_kcl)
+python src/external.py      # MDVR-KCL + NeuroVoz indices (after unzipping into data/external/)
 python src/train_baseline.py  # within-dataset + confound controls
 python src/run_xdb.py         # cross-database transfer
+python src/dann.py all        # pairwise + leave-one-corpus-out + vowel controls (all 3 corpora)
 ```
