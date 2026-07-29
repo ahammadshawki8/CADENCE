@@ -292,3 +292,4 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .ddkbtn.recording{background:var(--coral);animation:ddkpulse 1s ease-in-out infinite}
 @keyframes ddkpulse{0%,100%{box-shadow:0 0 0 0 var(--coral-soft)}50%{box-shadow:0 0 0 10px rgba(242,119,95,0)}}
 .ddkres{margin-top:12px;font-weight:700;color:var(--teal);font-size:14px}
+.stepbadge{display:inline-block;background:var(--teal-soft);color:var(--teal);font-weight:800;font-size:12px;letter-spacing:.4px;padding:6px 14px;border-radius:999px;margin-bottom:14px;text-transform:uppercase}

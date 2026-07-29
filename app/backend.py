@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from screen import screen, screen_many, DISCLAIMER  # noqa: E402
 from ddk import analyze_ddk  # noqa: E402
+from vowel import analyze_vowel  # noqa: E402
 from report_pdf import build_pdf  # noqa: E402
 
 app = FastAPI(title="Cadence", description="Voice-based Parkinson's screening (research demo)")
@@ -125,6 +126,28 @@ async def api_ddk(audio: UploadFile = File(...)):
         result = analyze_ddk(tmp_path)
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"DDK analysis failed: {e}")
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+    return JSONResponse(result)
+
+
+@app.post("/api/vowel")
+async def api_vowel(audio: UploadFile = File(...)):
+    """Sustained vowel /a/ phonation markers (jitter, shimmer, HNR) - measurement only."""
+    data = await audio.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty audio upload.")
+    suffix = Path(audio.filename or "vowel.wav").suffix or ".wav"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = tmp.name
+    try:
+        result = analyze_vowel(tmp_path)
+    except Exception as e:  # pragma: no cover
+        raise HTTPException(status_code=500, detail=f"Vowel analysis failed: {e}")
     finally:
         try:
             os.remove(tmp_path)

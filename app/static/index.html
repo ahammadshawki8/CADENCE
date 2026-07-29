@@ -56,8 +56,7 @@
 
 <!-- progress dots -->
 <div class="steps" id="steps" aria-hidden="true">
-  <span data-step="welcome" class="on"></span><span data-step="learn"></span>
-  <span data-step="record"></span><span data-step="analyzing"></span><span data-step="results"></span>
+  <span data-step="record"></span><span data-step="ddk"></span><span data-step="vowel"></span><span data-step="results"></span>
 </div>
 
 <main id="app">
@@ -106,8 +105,9 @@
 
   <!-- 3 · RECORD -->
   <section class="screen" id="record">
+    <div class="stepbadge" data-i18n="step1">Step 1 of 3 &middot; Read aloud</div>
     <h2 class="title" data-i18n="readTitle">Read this out loud</h2>
-    <p class="rec-instructions" data-i18n="recInstr">Tap the mic, read the passage aloud, then tap again to stop. A new passage appears each time - record about 3 for a reliable result. You can also upload audio files.</p>
+    <p class="rec-instructions" data-i18n="recInstr">Read the passage aloud; tap the mic to start and stop. A new passage appears each time - record about 3 for a reliable result, or upload audio files.</p>
     <div class="bubble pop"><p id="prompt" class="passage"></p></div>
     <div class="recwrap">
       <div class="rings" id="rings"><span></span><span></span><span></span></div>
@@ -120,22 +120,44 @@
       <div class="takedots" id="takeDots"></div>
       <div class="takelabel" id="takeStatus"></div>
     </div>
-    <button class="cta" id="analyzeBtn" data-go="analyzing" disabled><span data-i18n="analyse">Analyse my voice</span> <svg class="ic"><use href="#i-next"/></svg></button>
+    <button class="cta" id="analyzeBtn" data-go="ddk" disabled><span data-i18n="continue">Continue</span> <svg class="ic"><use href="#i-next"/></svg></button>
     <div class="altrow" style="display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
       <label class="linklike" id="uploadLbl" for="fileInput" data-i18n="upload" style="cursor:pointer">or upload an audio file (.wav)</label>
       <input type="file" id="fileInput" accept="audio/*,.wav,.flac,.ogg,.mp3,.m4a,.webm" hidden>
-      <span style="opacity:.4" aria-hidden="true">·</span>
+      <span style="opacity:.4" aria-hidden="true">&middot;</span>
       <button class="linklike" id="exampleBtn" data-i18n="example">or view an example result</button>
     </div>
-    <p class="mini" id="recHint" data-i18n="hint">Read the whole passage clearly in a quiet spot (about 30 seconds).
-      A longer, cleaner recording gives a far more reliable result.</p>
+    <p class="mini"><button class="linklike" data-go="analyzing" data-i18n="skipToResults">skip the extra tests and see my results</button></p>
+  </section>
 
-    <div class="ddkcard" id="ddkCard">
-      <div class="ddkhead"><svg class="ic sm"><use href="#i-mic"/></svg> <span data-i18n="ddkTitle">Articulation speed test (optional)</span></div>
-      <p class="ddkinstr" data-i18n="ddkInstr">Say "pa-ta-ka, pa-ta-ka" over and over, as fast and steady as you can, for about 5 seconds. This classic test measures articulation speed and rhythm.</p>
-      <button class="ddkbtn" id="ddkBtn"><svg class="ic"><use href="#i-mic"/></svg> <span class="ddklabel" data-i18n="ddkStart">Start pa-ta-ka test</span></button>
-      <div class="ddkres" id="ddkResult" hidden></div>
+  <!-- TEST STEP 2 · ARTICULATION (DDK) -->
+  <section class="screen" id="ddk">
+    <div class="stepbadge" data-i18n="step2">Step 2 of 3 &middot; Articulation</div>
+    <h2 class="title" data-i18n="ddkTitle2">Say &ldquo;pa-ta-ka&rdquo;</h2>
+    <p class="rec-instructions" data-i18n="ddkInstr">Tap the mic and say "pa-ta-ka, pa-ta-ka" over and over, as fast and steady as you can, for about 5 seconds. This classic test measures articulation speed and rhythm.</p>
+    <div class="recwrap">
+      <div class="rings"><span></span><span></span><span></span></div>
+      <button class="micbtn" id="ddkBtn" aria-label="pa-ta-ka"><svg class="ic big"><use href="#i-mic"/></svg></button>
+      <div class="timer" id="ddkStatus" data-i18n="ddkStart">Tap to start the pa-ta-ka test</div>
     </div>
+    <div class="ddkres" id="ddkResult" hidden></div>
+    <button class="cta" data-go="vowel"><span data-i18n="continue">Continue</span> <svg class="ic"><use href="#i-next"/></svg></button>
+    <p class="mini"><button class="linklike" data-go="vowel" data-i18n="skipStep">skip this test</button></p>
+  </section>
+
+  <!-- TEST STEP 3 · SUSTAINED VOWEL -->
+  <section class="screen" id="vowel">
+    <div class="stepbadge" data-i18n="step3">Step 3 of 3 &middot; Sustained vowel</div>
+    <h2 class="title" data-i18n="vowTitle">Hold &ldquo;aaah&rdquo;</h2>
+    <p class="rec-instructions" data-i18n="vowInstr">Tap the mic and hold a steady "aaah" at a comfortable pitch for about 4 seconds. This measures how clear and stable your voice is.</p>
+    <div class="recwrap">
+      <div class="rings"><span></span><span></span><span></span></div>
+      <button class="micbtn" id="vowelBtn" aria-label="aaah"><svg class="ic big"><use href="#i-mic"/></svg></button>
+      <div class="timer" id="vowelStatus" data-i18n="vowStart">Tap to start the vowel test</div>
+    </div>
+    <div class="ddkres" id="vowelResult" hidden></div>
+    <button class="cta" data-go="analyzing"><span data-i18n="seeResults">See my results</span> <svg class="ic"><use href="#i-next"/></svg></button>
+    <p class="mini"><button class="linklike" data-go="analyzing" data-i18n="skipStep">skip this test</button></p>
   </section>
 
   <!-- 4 · ANALYZING -->
@@ -173,6 +195,12 @@
       <h3 class="sect"><svg class="ic sm"><use href="#i-mic"/></svg> <span data-i18n="ddkCard">Articulation speed (pa-ta-ka)</span></h3>
       <div class="report" id="ddkStats"></div>
       <p class="mini" id="ddkReading" style="margin-top:10px"></p>
+    </div>
+
+    <div id="vowelResultBox" hidden>
+      <h3 class="sect"><svg class="ic sm"><use href="#i-mic"/></svg> <span data-i18n="vowCard">Sustained vowel (aaah)</span></h3>
+      <div class="report" id="vowelStats"></div>
+      <p class="mini" id="vowelReading" style="margin-top:10px"></p>
     </div>
 
     <div class="ethics result-ethics">

@@ -1,7 +1,7 @@
 /* Cadence - flow, recording, results, PDF, info pages */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const ORDER = ["welcome", "learn", "record", "analyzing", "results"];
+const ORDER = ["record", "ddk", "vowel", "results"];   // the 4-stage test progress dots
 let current = "welcome", lastResult = null;
 
 /* ---------- navigation ---------- */
@@ -12,8 +12,8 @@ function go(id) {
   from.classList.add("leave");
   setTimeout(() => { from.classList.remove("show", "leave"); to.classList.add("show"); window.scrollTo(0, 0); }, 250);
   current = id;
-  const idx = ORDER.indexOf(id);
-  $("#steps").classList.toggle("hide", idx < 0);      // hide dots on info pages
+  const idx = ORDER.indexOf(id === "analyzing" ? "vowel" : id);
+  $("#steps").classList.toggle("hide", idx < 0);      // dots only during the test flow
   $$("#steps span").forEach((d, i) => { d.classList.toggle("on", i === idx); d.classList.toggle("done", i < idx); });
   $("#homeBtn").classList.toggle("show", id !== "welcome");
 }
@@ -21,7 +21,7 @@ $$("[data-go]").forEach(b => b.addEventListener("click", e => {
   if (b.disabled) return; ripple(e, b);
   const dest = b.dataset.go;
   if (dest === "analyzing") return analyze();
-  if (dest === "record" && (current === "results" || current === "consent")) resetRecorder();
+  if (dest === "record" && (current === "results" || current === "learn" || current === "welcome")) resetRecorder();
   go(dest);
 }));
 $("#homeBtn").addEventListener("click", () => go("welcome"));
@@ -153,7 +153,7 @@ function updateTakes() {
 }
 function purgeRecording() {
   // Privacy + reset: drop all captured takes and revoke the preview blob URL.
-  takes = []; wavBlob = null; passageIdx = 0; renderPassage(); clearDdk();
+  takes = []; wavBlob = null; passageIdx = 0; renderPassage(); clearDdk(); clearVowel();
   const pb = $("#playback");
   if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} pb.removeAttribute("src"); try { pb.load(); } catch (e) {} }
   pb.classList.add("hidden");
@@ -188,43 +188,62 @@ function encodeWav(s, sr) {
   return new Blob([v], { type: "audio/wav" });
 }
 
-/* ---------- DDK (pa-ta-ka) articulation test: self-contained optional recorder ---------- */
-let ddkResult = null, ddkRec = null, ddkChunks = [], ddkStream = null, ddkCtx = null, ddkTimer = null;
-$("#ddkBtn").addEventListener("click", toggleDdk);
-async function toggleDdk() {
-  const btn = $("#ddkBtn");
-  if (ddkRec && ddkRec.state === "recording") { ddkRec.stop(); return; }
-  try { ddkStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
-  catch (e) { return toast(t("toastMic")); }
-  ddkCtx = new (window.AudioContext || window.webkitAudioContext)();
-  ddkChunks = []; ddkRec = new MediaRecorder(ddkStream);
-  ddkRec.ondataavailable = e => e.data.size && ddkChunks.push(e.data);
-  ddkRec.onstop = finishDdk; ddkRec.start();
-  btn.classList.add("recording"); $(".ddklabel", btn).textContent = t("ddkStop");
-  ddkTimer = setTimeout(() => { if (ddkRec && ddkRec.state === "recording") ddkRec.stop(); }, 8000);
+/* ---------- Optional task recorders (DDK + sustained vowel): self-contained ---------- */
+let ddkResult = null, vowelResult = null;
+function makeTaskRecorder(cfg) {
+  let rec = null, chunks = [], strm = null, ctx = null, tmr = null;
+  $(cfg.btn).addEventListener("click", toggle);
+  async function toggle() {
+    const btn = $(cfg.btn);
+    if (rec && rec.state === "recording") { rec.stop(); return; }
+    try { strm = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
+    catch (e) { return toast(t("toastMic")); }
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    chunks = []; rec = new MediaRecorder(strm);
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = finish; rec.start();
+    btn.classList.add("recording"); $(cfg.status).textContent = t(cfg.recKey);
+    tmr = setTimeout(() => { if (rec && rec.state === "recording") rec.stop(); }, 8000);
+  }
+  async function finish() {
+    clearTimeout(tmr); strm.getTracks().forEach(x => x.stop());
+    $(cfg.btn).classList.remove("recording"); $(cfg.status).textContent = t(cfg.againKey);
+    const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
+    const audio = await ctx.decodeAudioData(await blob.arrayBuffer());
+    const wav = encodeWav(resampleMono(audio, 16000), 16000);
+    const fd = new FormData(); fd.append("audio", wav, "clip.wav");
+    try {
+      const r = await fetch(cfg.endpoint, { method: "POST", body: fd });
+      const res = await r.json();
+      if (!res.ok) { toast(res.error || t("taskFail")); return; }
+      cfg.onResult(res);
+    } catch (e) { toast(t("taskFail") + " " + netMsg(e)); }
+  }
+  return {
+    reset() {
+      const el = $(cfg.result); if (el) { el.hidden = true; el.innerHTML = ""; }
+      const st = $(cfg.status); if (st) st.textContent = t(cfg.startKey);
+    }
+  };
 }
-async function finishDdk() {
-  clearTimeout(ddkTimer);
-  ddkStream.getTracks().forEach(tr => tr.stop());
-  const btn = $("#ddkBtn"); btn.classList.remove("recording"); $(".ddklabel", btn).textContent = t("ddkAgain");
-  const blob = new Blob(ddkChunks, { type: ddkChunks[0]?.type || "audio/webm" });
-  const audio = await ddkCtx.decodeAudioData(await blob.arrayBuffer());
-  const wav = encodeWav(resampleMono(audio, 16000), 16000);
-  const fd = new FormData(); fd.append("audio", wav, "ddk.wav");
-  try {
-    const r = await fetch("/api/ddk", { method: "POST", body: fd });
-    const res = await r.json();
-    if (!res.ok) { toast(res.error || t("ddkFail")); return; }
-    ddkResult = res;
-    const el = $("#ddkResult"); el.hidden = false;
+const ddkRecorder = makeTaskRecorder({
+  btn: "#ddkBtn", status: "#ddkStatus", result: "#ddkResult", endpoint: "/api/ddk",
+  startKey: "ddkStart", recKey: "ddkStop", againKey: "ddkAgain",
+  onResult(res) {
+    ddkResult = res; const el = $("#ddkResult"); el.hidden = false;
     el.innerHTML = t("ddkInline", { rate: res.syllable_rate, reg: Math.round((res.regularity || 0) * 100) });
-  } catch (e) { toast(t("ddkFail") + " " + netMsg(e)); }
-}
-function clearDdk() {
-  ddkResult = null;
-  const el = $("#ddkResult"); if (el) { el.hidden = true; el.innerHTML = ""; }
-  const btn = $("#ddkBtn"); if (btn) $(".ddklabel", btn).textContent = t("ddkStart");
-}
+  }
+});
+const vowelRecorder = makeTaskRecorder({
+  btn: "#vowelBtn", status: "#vowelStatus", result: "#vowelResult", endpoint: "/api/vowel",
+  startKey: "vowStart", recKey: "vowStop", againKey: "vowAgain",
+  onResult(res) {
+    vowelResult = res; const el = $("#vowelResult"); el.hidden = false;
+    el.innerHTML = t("vowInline", { hnr: res.hnr != null ? res.hnr : "-" });
+  }
+});
+function clearDdk() { ddkResult = null; ddkRecorder.reset(); }
+function clearVowel() { vowelResult = null; vowelRecorder.reset(); }
 
 /* ---------- analyze ---------- */
 let MSGS = ["Listening to your voice…", "Measuring your pitch", "Reading your rhythm", "Checking voice clarity", "Almost there…"];
@@ -237,7 +256,7 @@ async function analyze() {
     const r = await fetch("/api/screen", { method: "POST", body: fd });
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
-    res.ddk = ddkResult;   // attach the optional articulation-test result to the report
+    res.ddk = ddkResult; res.vowel = vowelResult;   // attach optional task results to the report
     await minWait(t0); stopMsgs(); renderResults(res); go("results"); purgeRecording();
   } catch (e) { stopMsgs(); toast(t("toastAnalyzeFail") + " " + netMsg(e)); go("record"); }
 }
@@ -314,6 +333,17 @@ function renderResults(res, isExample) {
       const inRange = dk.syllable_rate >= 5 && (dk.regularity == null || dk.regularity >= 0.7);
       $("#ddkReading").textContent = t(inRange ? "ddkOk" : "ddkFlag", { rate: dk.syllable_rate });
     } else ddkBox.hidden = true;
+  }
+  const vowBox = $("#vowelResultBox"), vw = res.vowel;
+  if (vowBox) {
+    if (vw && !isExample) {
+      vowBox.hidden = false;
+      $("#vowelStats").innerHTML =
+        (vw.hnr != null ? `<div class="stat"><div class="sv">${vw.hnr}</div><div class="sl">${t("vowHnr")}</div></div>` : "") +
+        (vw.jitter != null ? `<div class="stat"><div class="sv">${vw.jitter}</div><div class="sl">${t("vowJit")}</div></div>` : "") +
+        (vw.shimmer != null ? `<div class="stat"><div class="sv">${vw.shimmer}</div><div class="sl">${t("vowShim")}</div></div>` : "");
+      $("#vowelReading").textContent = vw.reading || "";
+    } else vowBox.hidden = true;
   }
   $("#resDisclaimer").textContent = t("disclaimer");
   // No celebratory confetti: a low indicator from one uncalibrated recording is not a clean bill of health.
