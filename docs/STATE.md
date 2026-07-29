@@ -2,8 +2,8 @@
 
 <!-- msr:digest:start -->
 **Project:** Cadence | **Archetype:** research (+ shipped demo app) | **Updated:** 2026-07-28
-**Now:** Clinical features shipped: linear multi-step test (read→pa-ta-ka→vowel→results), DDK + sustained-vowel tasks, clinical-subsystem report, multi-passage pooling, local longitudinal history. App verified end-to-end. Deadline 2026-08-16.
-**Next:** Translate the new UI strings (DDK/vowel/history are English-fallback); Devpost writeup + HF Spaces deploy.
+**Now:** Clinical multi-step app complete + fully translated (10 langs x 140 keys): read→pa-ta-ka→vowel→results, DDK+vowel tasks with recording animation, clinical-subsystem report, combined 3-step results+PDF, methodology flow diagrams, local history/trend. Verified end-to-end. Deadline 2026-08-16.
+**Next:** Native review of hi/bn/ar/zh strings; Devpost writeup + HF Spaces deploy.
 **Blocked:** none.
 <!-- msr:digest:end -->
 
