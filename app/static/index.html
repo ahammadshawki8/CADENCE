@@ -116,7 +116,12 @@
     </div>
     <audio id="playback" controls class="playback hidden"></audio>
     <button class="cta" id="analyzeBtn" data-go="analyzing" disabled><span data-i18n="analyse">Analyse my voice</span> <svg class="ic"><use href="#i-next"/></svg></button>
-    <button class="linklike" id="exampleBtn" data-i18n="example">or view an example result</button>
+    <div class="altrow" style="display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
+      <label class="linklike" id="uploadLbl" for="fileInput" data-i18n="upload" style="cursor:pointer">or upload an audio file (.wav)</label>
+      <input type="file" id="fileInput" accept="audio/*,.wav,.flac,.ogg,.mp3,.m4a,.webm" hidden>
+      <span style="opacity:.4" aria-hidden="true">·</span>
+      <button class="linklike" id="exampleBtn" data-i18n="example">or view an example result</button>
+    </div>
     <p class="mini" id="recHint" data-i18n="hint">Read the whole passage clearly in a quiet spot (about 30 seconds).
       A longer, cleaner recording gives a far more reliable result.</p>
   </section>

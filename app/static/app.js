@@ -137,6 +137,18 @@ function purgeRecording() {
 }
 function resetRecorder() { purgeRecording(); $("#timer").textContent = t("tap"); }
 
+/* Upload an existing audio file (feed straight into /api/screen, no mic round-trip). */
+$("#fileInput").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";                      // allow re-selecting the same file
+  if (!f) return;
+  purgeRecording();
+  wavBlob = f;                              // a File is a Blob and carries .name
+  const pb = $("#playback"); pb.src = URL.createObjectURL(f); pb.classList.remove("hidden");
+  $("#analyzeBtn").disabled = false;
+  $("#timer").textContent = f.name;
+});
+
 function resampleMono(ab, sr) {
   const n = ab.numberOfChannels, len = ab.length, mono = new Float32Array(len);
   for (let c = 0; c < n; c++) { const d = ab.getChannelData(c); for (let i = 0; i < len; i++) mono[i] += d[i] / n; }
@@ -160,7 +172,7 @@ let msgInt;
 async function analyze() {
   if (!wavBlob) return toast(t("toastRecordFirst"));
   go("analyzing"); cycleMsgs();
-  const fd = new FormData(); fd.append("audio", wavBlob, "rec.wav"); const t0 = Date.now();
+  const fd = new FormData(); fd.append("audio", wavBlob, (wavBlob && wavBlob.name) || "rec.wav"); const t0 = Date.now();
   try {
     const r = await fetch("/api/screen", { method: "POST", body: fd });
     const res = await r.json();
