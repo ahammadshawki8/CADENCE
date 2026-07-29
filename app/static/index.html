@@ -247,7 +247,7 @@
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
         <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>pa-ta-ka</span><small>articulation rate &amp; rhythm</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>aaah</span><small>voice clarity &amp; stability</small></div>
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>eee</span><small>voice clarity &amp; stability</small></div>
       </div>
       <div class="flowdown" aria-hidden="true">&darr;</div>
       <div class="arch flowd">
@@ -255,9 +255,9 @@
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
         <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Channel-invariant model</span><small>domain-adversarial, windowed median</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Combined report</span><small>phonation, prosody, articulation, rate</small></div>
+        <div class="node"><svg class="ic"><use href="#i-search"/></svg><span>Explain</span><small>SHAP biomarker families</small></div>
         <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Private trend</span><small>saved on your device only</small></div>
+        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Report + PDF</span><small>combined, in any language</small></div>
       </div>
 
       <h4>The problem with “99% accurate”</h4>
@@ -315,6 +315,15 @@
       within-corpus vowel "accuracy" is the microphone, not the disease. A screening from a single
       recording on a new device is an uncalibrated indicator, never a diagnosis - these are honest
       numbers across languages and microphones, not inflated single-dataset scores.</p>
+      <h4>How it's built</h4>
+      <p>Backend: FastAPI (Python). Frontend: a single-page, installable PWA with client-side audio
+      capture and offline caching. Each recording is turned into eGeMAPS functionals (openSMILE),
+      scored over overlapping windows and combined by median for robustness; inference is
+      <b>torch-free</b>, so no deep-learning runtime is needed to serve. The live app ships the
+      interpretable model trained offline on pooled Italian + MDVR-KCL recordings, while the research
+      domain-adversarial network learns channel-invariant features (the ~0.84 cross-lingual result),
+      validated across three corpora and three languages. Nothing you record is uploaded or stored -
+      audio is analysed on the spot and discarded.</p>
       <h4>Research that backs this project</h4>
       <p class="muted">Parkinson's speech + cross-corpus generalization:</p>
       <ul>
@@ -349,30 +358,6 @@
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
 
-  <section class="screen info" id="architecture">
-    <h2 class="title">Architecture</h2>
-    <div class="doc">
-      <div class="arch">
-        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>Voice input</span><small>~30s reading; quality-gated, 16 kHz</small></div>
-        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Features</span><small>eGeMAPS acoustic biomarkers (openSMILE)</small></div>
-        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Model</span><small>logistic on eGeMAPS; windowed median (robust)</small></div>
-        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-search"/></svg><span>Explain</span><small>SHAP biomarker families + confidence</small></div>
-        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
-        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Report</span><small>web result + printable PDF (any language)</small></div>
-      </div>
-      <p class="muted">Backend: FastAPI (Python). Frontend: a single-page PWA with client-side audio
-      capture. Features are eGeMAPS functionals (openSMILE); the recording is scored over overlapping
-      windows and combined by median for robustness. Inference is torch-free (no deep-learning runtime
-      needed to serve). The live app ships the interpretable logistic model, trained offline on pooled
-      Italian + MDVR-KCL recordings. Our research additionally uses a domain-adversarial network
-      (gradient reversal) to learn channel-invariant features (~0.80 cross-lingual AUC), validated
-      across three corpora and three languages (Italian, English, Spanish).</p>
-    </div>
-    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
-  </section>
 
   <section class="screen info" id="license">
     <h2 class="title">Usage &amp; license</h2>
@@ -399,7 +384,6 @@
   <div class="footlinks">
     <button data-info="about"><svg class="ic sm"><use href="#i-user"/></svg> <span data-i18n="footAbout">About &amp; credit</span></button>
     <button data-info="methodology"><svg class="ic sm"><use href="#i-doc"/></svg> <span data-i18n="footMethod">Methodology</span></button>
-    <button data-info="architecture"><svg class="ic sm"><use href="#i-cpu"/></svg> <span data-i18n="footArch">Architecture</span></button>
     <button data-info="license"><svg class="ic sm"><use href="#i-scale"/></svg> <span data-i18n="footLicense">License</span></button>
     <a href="https://github.com/ahammadshawki8/CADENCE" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-github"/></svg> <span data-i18n="footGithub">GitHub</span></a>
   </div>

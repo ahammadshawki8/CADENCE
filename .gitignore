@@ -27,3 +27,4 @@ artifacts/*.pkl
 .DS_Store
 .ipynb_checkpoints/
 Thumbs.db
+/.playwright-mcp/
