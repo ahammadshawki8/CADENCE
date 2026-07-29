@@ -191,24 +191,34 @@ function encodeWav(s, sr) {
 
 /* ---------- Optional task recorders (DDK + sustained vowel): self-contained ---------- */
 let ddkResult = null, vowelResult = null;
+function buildBars(sel, n = 16) { const m = $(sel); if (m) { m.innerHTML = ""; for (let i = 0; i < n; i++) m.appendChild(document.createElement("i")); } }
 function makeTaskRecorder(cfg) {
-  let rec = null, chunks = [], strm = null, ctx = null, tmr = null;
+  let rec = null, chunks = [], strm = null, ctx = null, tmr = null, raf = null, an = null;
+  const wrap = $(cfg.btn).closest(".recwrap");
+  if (cfg.meter) buildBars(cfg.meter);
   $(cfg.btn).addEventListener("click", toggle);
+  function driveMeter() {
+    const bars = $$(cfg.meter + " i"), data = new Uint8Array(an.frequencyBinCount);
+    (function loop() { an.getByteFrequencyData(data); bars.forEach((b, i) => { b.style.height = 6 + ((data[i * 2] || 0) / 255) * 30 + "px"; }); raf = requestAnimationFrame(loop); })();
+  }
   async function toggle() {
-    const btn = $(cfg.btn);
     if (rec && rec.state === "recording") { rec.stop(); return; }
     try { strm = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
     catch (e) { return toast(t("toastMic")); }
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (cfg.meter) { an = ctx.createAnalyser(); an.fftSize = 512; ctx.createMediaStreamSource(strm).connect(an); driveMeter(); }
     chunks = []; rec = new MediaRecorder(strm);
     rec.ondataavailable = e => e.data.size && chunks.push(e.data);
     rec.onstop = finish; rec.start();
-    btn.classList.add("recording"); $(cfg.status).textContent = t(cfg.recKey);
+    if (wrap) wrap.classList.add("recording");   // same rings + pulse as the main recorder
+    $(cfg.status).textContent = t(cfg.recKey);
     tmr = setTimeout(() => { if (rec && rec.state === "recording") rec.stop(); }, 8000);
   }
   async function finish() {
-    clearTimeout(tmr); strm.getTracks().forEach(x => x.stop());
-    $(cfg.btn).classList.remove("recording"); $(cfg.status).textContent = t(cfg.againKey);
+    clearTimeout(tmr); if (raf) cancelAnimationFrame(raf);
+    strm.getTracks().forEach(x => x.stop());
+    if (wrap) wrap.classList.remove("recording");
+    $(cfg.status).textContent = t(cfg.againKey);
     const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
     const audio = await ctx.decodeAudioData(await blob.arrayBuffer());
     const wav = encodeWav(resampleMono(audio, 16000), 16000);
@@ -228,7 +238,7 @@ function makeTaskRecorder(cfg) {
   };
 }
 const ddkRecorder = makeTaskRecorder({
-  btn: "#ddkBtn", status: "#ddkStatus", result: "#ddkResult", endpoint: "/api/ddk",
+  btn: "#ddkBtn", status: "#ddkStatus", result: "#ddkResult", endpoint: "/api/ddk", meter: "#ddkMeter",
   startKey: "ddkStart", recKey: "ddkStop", againKey: "ddkAgain",
   onResult(res) {
     ddkResult = res; const el = $("#ddkResult"); el.hidden = false;
@@ -236,7 +246,7 @@ const ddkRecorder = makeTaskRecorder({
   }
 });
 const vowelRecorder = makeTaskRecorder({
-  btn: "#vowelBtn", status: "#vowelStatus", result: "#vowelResult", endpoint: "/api/vowel",
+  btn: "#vowelBtn", status: "#vowelStatus", result: "#vowelResult", endpoint: "/api/vowel", meter: "#vowelMeter",
   startKey: "vowStart", recKey: "vowStop", againKey: "vowAgain",
   onResult(res) {
     vowelResult = res; const el = $("#vowelResult"); el.hidden = false;
@@ -295,6 +305,12 @@ function narrativeFor(res) {
   const conf = res.confidence != null && res.confidence < 0.66 ? t("narrConfLow") : t("narrConfHigh");
   return t("narr" + BAND_SFX[res.risk_band], { pct }) + " " + conf + " " + t("narrTail");
 }
+const SUBSYS_DEF = [["phonation", ["jitter", "shimmer", "hnr"], "i-heart"], ["prosody", ["pitch", "loudness"], "i-chart"],
+                    ["articulation", ["articulation", "spectral"], "i-search"], ["rate", ["rhythm"], "i-doc"]];
+function subsystemRows(res) {
+  const fam = {}; (res.all_factors || res.top_factors || []).forEach(f => { fam[f.family] = f.shap; });
+  return SUBSYS_DEF.map(([key, fams, ic]) => ({ key, ic, shap: fams.reduce((s, k) => s + (fam[k] || 0), 0) }));
+}
 function renderResults(res, isExample) {
   lastResult = res; res._isExample = isExample;
   const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
@@ -314,11 +330,17 @@ function renderResults(res, isExample) {
     cc.hidden = false; cc.className = "confchip"; cc.style.color = lvl[1];
     cc.innerHTML = icon(lvl[2]) + t("confPrefix") + " " + t(lvl[0]) + " · " + t("confWindows", { n: res.n_windows || "" });
   } else { cc.hidden = true; }
+  // Combined 3-step snapshot: reading indicator (headline) + optional DDK / vowel.
+  const ts = $("#taskSummary");
+  if (ts) {
+    let cards = `<div class="tcard tc-main" style="border-color:${BAND_COLOR[band]}"><div class="tclabel">${t("sumReading")}</div>` +
+      `<div class="tcval" style="color:${BAND_VCOLOR[band] || ''}">${pct}<small>%</small></div><div class="tcsub">${t("band" + sfx + "T")}</div></div>`;
+    if (res.ddk) cards += `<div class="tcard"><div class="tclabel">${t("sumDdk")}</div><div class="tcval">${res.ddk.syllable_rate}<small>/s</small></div><div class="tcsub">${t("ddkRate")}</div></div>`;
+    if (res.vowel && res.vowel.hnr != null) cards += `<div class="tcard"><div class="tclabel">${t("sumVowel")}</div><div class="tcval">${res.vowel.hnr}<small>dB</small></div><div class="tcsub">${t("vowHnr")}</div></div>`;
+    ts.innerHTML = cards;
+  }
   // Group the biomarker families into the clinical speech subsystems a clinician uses.
-  const SUBSYS = [["phonation", ["jitter", "shimmer", "hnr"], "i-heart"], ["prosody", ["pitch", "loudness"], "i-chart"],
-                  ["articulation", ["articulation", "spectral"], "i-search"], ["rate", ["rhythm"], "i-doc"]];
-  const fam = {}; (res.all_factors || res.top_factors || []).forEach(f => { fam[f.family] = f.shap; });
-  const rows = SUBSYS.map(([key, fams, ic]) => ({ key, ic, shap: fams.reduce((s, k) => s + (fam[k] || 0), 0) }));
+  const rows = subsystemRows(res);
   const maxS = Math.max(...rows.map(r => Math.abs(r.shap)), 1e-6);
   $("#factors").innerHTML = rows.map((r, i) => {
     const pd = r.shap > 0, w = Math.round(Math.abs(r.shap) / maxS * 100);
@@ -407,13 +429,24 @@ $("#pdfBtn").addEventListener("click", (e) => {
   ripple(e, e.currentTarget);
   const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
   const dir = (PASSAGES[currentLang] && PASSAGES[currentLang].dir) || "ltr";
-  const maxS = Math.max(...res.top_factors.map(f => Math.abs(f.shap))) || 1;
-  const factors = res.top_factors.map(f => {
-    const pd = f.shap > 0;
-    return `<tr><td>${esc(famLabel(f))}</td><td style="color:${pd ? "#c0392b" : "#1a8a5a"}">${t(pd ? "tagPd" : "tagHc")}</td>
-      <td>${Math.round(Math.abs(f.shap) / maxS * 100)}%</td></tr>`;
+  const subs = subsystemRows(res), maxS = Math.max(...subs.map(r => Math.abs(r.shap)), 1e-6);
+  const factors = subs.map(r => {
+    const pd = r.shap > 0;
+    return `<tr><td>${esc(t("sub_" + r.key))}</td><td style="color:${pd ? "#c0392b" : "#1a8a5a"}">${t(pd ? "tagPd" : "tagHc")}</td>
+      <td>${Math.round(Math.abs(r.shap) / maxS * 100)}%</td></tr>`;
   }).join("");
   const measures = res.acoustic_report.map(s => `<tr><td>${esc(t(REP_KEY[s.key] || s.key))}</td><td><b>${fmtVal(s.value)}</b></td></tr>`).join("");
+  const ddkPdf = res.ddk ? `<h3>${esc(t("ddkCard"))}</h3><table>
+      <tr><td>${esc(t("ddkRate"))}</td><td><b>${res.ddk.syllable_rate} /s</b></td></tr>
+      <tr><td>${esc(t("ddkReg"))}</td><td><b>${Math.round((res.ddk.regularity || 0) * 100)}%</b></td></tr>
+      <tr><td>${esc(t("ddkSyl"))}</td><td><b>${res.ddk.n_syllables}</b></td></tr></table>` : "";
+  const vowPdf = res.vowel ? `<h3>${esc(t("vowCard"))}</h3><table>
+      ${res.vowel.hnr != null ? `<tr><td>${esc(t("vowHnr"))}</td><td><b>${res.vowel.hnr}</b></td></tr>` : ""}
+      ${res.vowel.jitter != null ? `<tr><td>${esc(t("vowJit"))}</td><td><b>${res.vowel.jitter}</b></td></tr>` : ""}
+      ${res.vowel.shimmer != null ? `<tr><td>${esc(t("vowShim"))}</td><td><b>${res.vowel.shimmer}</b></td></tr>` : ""}</table>` : "";
+  const stepsLine = t("sumReading") + " " + pct + "%" +
+    (res.ddk ? " &middot; " + t("sumDdk") + " " + res.ddk.syllable_rate + "/s" : "") +
+    (res.vowel && res.vowel.hnr != null ? " &middot; " + t("sumVowel") + " " + res.vowel.hnr + " dB" : "");
   const bc = { low: "#1a8a5a", moderate: "#b8860b", elevated: "#c0392b" }[band] || "#1f2a44";
   const html = `<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><title>Cadence Report</title>
   <style>
@@ -433,9 +466,12 @@ $("#pdfBtn").addEventListener("click", (e) => {
     <div class="big">${pct}%</div>
     <div class="muted">${t("indicator")} · ${t("pdfBand")}: <b style="color:${bc}">${t("band" + sfx + "T")}</b></div>
     <div class="bar"><i></i></div>
+    <div class="muted"><b>${t("pdfSteps")}:</b> ${stepsLine}</div>
     <h3>${t("pdfSummary")}</h3><p>${esc(narrativeFor(res))}</p>
     <h3>${t("told")}</h3><table>${factors}</table>
     <h3>${t("card")}</h3><table>${measures}</table>
+    ${ddkPdf}
+    ${vowPdf}
     <h3>${t("pdfMethod")}</h3><p class="disc">${esc(t("disclaimer"))}</p>
     <p class="muted">github.com/ahammadshawki8/CADENCE</p>
     <script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script>

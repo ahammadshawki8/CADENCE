@@ -298,3 +298,13 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .histlist{display:flex;flex-direction:column;gap:4px;max-width:360px;margin:0 auto}
 .histrow{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;border-radius:11px;background:var(--card);border:1px solid var(--line);font-weight:600;color:var(--ink)}
 .hmuted{color:var(--ink-soft);font-weight:600;margin-left:6px;font-size:12px}
+/* combined 3-step summary on results */
+.tasksum{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:8px 0 22px}
+.tcard{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:13px 18px;min-width:118px;text-align:center;box-shadow:0 6px 18px rgba(60,54,120,.06)}
+.tclabel{font-size:11px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px}
+.tcval{font-size:30px;font-weight:800;color:var(--ink);margin:3px 0 1px;line-height:1}
+.tcval small{font-size:14px;font-weight:700;color:var(--ink-soft)}
+.tcsub{font-size:11px;font-weight:600;color:var(--ink-soft)}
+/* methodology flow diagrams */
+.flowd{margin:14px 0}
+.flowdown{text-align:center;color:var(--brand-2);font-size:20px;font-weight:800;margin:0 0 4px}

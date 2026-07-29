@@ -138,6 +138,7 @@
     <div class="recwrap">
       <div class="rings"><span></span><span></span><span></span></div>
       <button class="micbtn" id="ddkBtn" aria-label="pa-ta-ka"><svg class="ic big"><use href="#i-mic"/></svg></button>
+      <div class="meter" id="ddkMeter" aria-hidden="true"></div>
       <div class="timer" id="ddkStatus" data-i18n="ddkStart">Tap to start the pa-ta-ka test</div>
     </div>
     <div class="ddkres" id="ddkResult" hidden></div>
@@ -153,6 +154,7 @@
     <div class="recwrap">
       <div class="rings"><span></span><span></span><span></span></div>
       <button class="micbtn" id="vowelBtn" aria-label="aaah"><svg class="ic big"><use href="#i-mic"/></svg></button>
+      <div class="meter" id="vowelMeter" aria-hidden="true"></div>
       <div class="timer" id="vowelStatus" data-i18n="vowStart">Tap to start the vowel test</div>
     </div>
     <div class="ddkres" id="vowelResult" hidden></div>
@@ -184,6 +186,8 @@
     <p class="muted" id="calNote" data-i18n="calNote" hidden style="font-size:.86rem;margin:.35rem auto .1rem;max-width:34rem;line-height:1.4"></p>
     <p class="verdict" id="verdict"></p>
     <div class="narrative" id="narrative"></div>
+
+    <div class="tasksum" id="taskSummary"></div>
 
     <h3 class="sect"><svg class="ic sm"><use href="#i-search"/></svg> <span data-i18n="told">What your voice told us</span></h3>
     <div class="factors" id="factors"></div>
@@ -237,6 +241,27 @@
   <section class="screen info" id="methodology">
     <h2 class="title">Methodology</h2>
     <div class="doc">
+      <h4>How a Cadence test works</h4>
+      <p>You complete up to three short speech tasks, each probing a different part of speech-motor
+      control. Everything is analysed on the spot and your audio is never stored.</p>
+      <div class="arch flowd">
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>Read aloud</span><small>connected speech (screening model)</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>pa-ta-ka</span><small>articulation rate &amp; rhythm</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-mic"/></svg><span>aaah</span><small>voice clarity &amp; stability</small></div>
+      </div>
+      <div class="flowdown" aria-hidden="true">&darr;</div>
+      <div class="arch flowd">
+        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>eGeMAPS</span><small>acoustic biomarkers</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-cpu"/></svg><span>Channel-invariant model</span><small>domain-adversarial, windowed median</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-doc"/></svg><span>Combined report</span><small>phonation, prosody, articulation, rate</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><svg class="ic"><use href="#i-chart"/></svg><span>Private trend</span><small>saved on your device only</small></div>
+      </div>
+
       <h4>The problem with “99% accurate”</h4>
       <p>Many voice-based Parkinson’s classifiers report near-perfect accuracy. We show this is often
       a mirage: on the Italian Parkinson’s corpus a model reaches an AUC of 1.00 even after
@@ -259,12 +284,30 @@
           score that stays high with a useless source is exploiting the target recording's own
           structure, not transferring disease knowledge. This exposed a tempting ~0.91 average as
           confound leakage; only the ~0.84 clean-target result survives the control.</li>
+        <li><b>Multi-task clinical assessment.</b> Beyond connected reading we add the classic
+          bedside tasks - <b>diadochokinetic /pa-ta-ka/</b> (articulation rate and rhythm) and a
+          <b>sustained vowel /a/</b> (voice clarity and stability, reported as a measurement only,
+          since the vowel does not transfer across recording channels). Results are grouped into the
+          four speech subsystems a clinician uses: <b>phonation, prosody, articulation, rate</b>.</li>
+        <li><b>Multiple passages + longitudinal tracking.</b> Several short passages are pooled into
+          one steadier estimate (variance falls with more takes), and every result can be saved
+          on-device to watch the trend over time - as clinical monitoring does.</li>
         <li><b>Explainability.</b> SHAP attributes each screening result to specific voice biomarkers.</li>
         <li><b>Language-independent.</b> Cadence measures voice quality and prosody, not words, so it
           works across languages; the reading passage is offered in several languages. Validated so
           far on Italian, English and Spanish.</li>
       </ul>
       <h4>Result</h4>
+      <p>The honest number climbed one careful step at a time - and one tempting step was rejected:</p>
+      <div class="arch flowd">
+        <div class="node"><span>Within-corpus</span><small>AUC ~1.00 (mirage)</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><span>Cross-database</span><small>~0.72 biomarkers</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><span>+ DANN</span><small>~0.80</small></div>
+        <div class="arrow"><svg class="ic"><use href="#i-next"/></svg></div>
+        <div class="node"><span>+ entropy reg</span><small>~0.84 shuffle-verified</small></div>
+      </div>
       <p>On the strict unseen-channel test, deep speech embeddings (wav2vec2 / HuBERT) collapse to
       ≈ 0.60, interpretable biomarkers transfer at ≈ 0.72, and domain-adversarial adaptation with
       entropy regularization reaches a shuffle-verified <b>≈ 0.84 cross-lingual AUC</b> on connected
