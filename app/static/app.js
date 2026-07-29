@@ -8,7 +8,6 @@ let current = "welcome", lastResult = null;
 function go(id) {
   if (id === current) return;
   if (current === "record") stopRec();               // don't leave the mic hot
-  if (id === "history") renderHistory();
   const from = $("#" + current), to = $("#" + id);
   from.classList.add("leave");
   setTimeout(() => { from.classList.remove("show", "leave"); to.classList.add("show"); window.scrollTo(0, 0); }, 250);
@@ -65,7 +64,7 @@ function applyLang() {
   MSGS = [t("am1"), t("am2"), t("am3"), t("am4"), t("am5")];
   if (!recwrap.classList.contains("recording")) $("#timer").textContent = t("tap");
   if (lastResult && current === "results") renderResults(lastResult, lastResult._isExample);
-  updateTakes(); updateHistLink();
+  updateTakes();
 }
 
 (async function initLang() {
@@ -268,7 +267,6 @@ async function analyze() {
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
     res.ddk = ddkResult; res.vowel = vowelResult;   // attach optional task results to the report
-    saveHistory(res);   // longitudinal tracking (local only)
     await minWait(t0); stopMsgs(); renderResults(res); go("results"); purgeRecording();
   } catch (e) { stopMsgs(); toast(t("toastAnalyzeFail") + " " + netMsg(e)); go("record"); }
 }
@@ -383,43 +381,6 @@ function confetti() {
   const box = $("#confetti"); box.innerHTML = ""; const cols = ["#6c5ce7", "#17b8a6", "#8b7ff0"];
   for (let i = 0; i < 46; i++) { const c = document.createElement("i"); c.style.left = Math.random() * 100 + "%"; c.style.background = cols[i % cols.length]; c.style.animationDuration = 2 + Math.random() * 2 + "s"; c.style.animationDelay = Math.random() * .6 + "s"; box.appendChild(c); }
   setTimeout(() => box.innerHTML = "", 4200);
-}
-
-/* ---------- longitudinal tracking (local history + trend) ---------- */
-function loadHistory() { try { return JSON.parse(localStorage.getItem("cadence_history") || "[]"); } catch (e) { return []; } }
-function saveHistory(res) {
-  if (res.probability_pd == null) return;
-  try {
-    const h = loadHistory();
-    h.push({ t: Date.now(), p: res.probability_pd, band: res.risk_band,
-             ddk: res.ddk ? res.ddk.syllable_rate : null, hnr: res.vowel ? res.vowel.hnr : null });
-    localStorage.setItem("cadence_history", JSON.stringify(h.slice(-30)));
-    updateHistLink();
-  } catch (e) {}
-}
-function updateHistLink() { const n = loadHistory().length; $$("[data-histlink]").forEach(el => { el.hidden = n === 0; }); }
-function renderHistory() {
-  const h = loadHistory(), box = $("#historyBody");
-  if (!box) return;
-  if (!h.length) { box.innerHTML = `<p class="sub">${t("histEmpty")}</p>`; return; }
-  const W = 320, H = 96, pad = 12, plot = H - 2 * pad;
-  const xs = h.map((_, i) => pad + i * (W - 2 * pad) / Math.max(1, h.length - 1));
-  const ys = h.map(e => H - pad - e.p * plot);
-  const line = xs.map((x, i) => `${x.toFixed(1)},${ys[i].toFixed(1)}`).join(" ");
-  const dots = h.map((e, i) => `<circle cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="4.5" fill="${BAND_COLOR[e.band] || '#888'}"/>`).join("");
-  const mid = (H - pad - 0.5 * plot).toFixed(1);
-  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:360px" preserveAspectRatio="xMidYMid meet">
-    <line x1="${pad}" y1="${mid}" x2="${W - pad}" y2="${mid}" stroke="var(--line)" stroke-dasharray="4 4"/>
-    <polyline points="${line}" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round"/>${dots}</svg>`;
-  const rows = h.slice().reverse().map(e => {
-    const d = new Date(e.t).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-    const extra = (e.ddk ? ` &middot; ${e.ddk}/s` : "") + (e.hnr != null ? ` &middot; ${e.hnr}dB` : "");
-    return `<div class="histrow"><span>${d}<small class="hmuted">${extra}</small></span><span style="color:${BAND_VCOLOR[e.band] || ''};font-weight:800">${Math.round(e.p * 100)}%</span></div>`;
-  }).join("");
-  box.innerHTML = `<div class="histchart">${svg}<div class="mini" style="margin-top:2px">${t("histTrend")}</div></div>
-    <div class="histlist">${rows}</div>
-    <button class="linklike" id="histClear" style="margin-top:14px">${t("histClear")}</button>`;
-  $("#histClear").addEventListener("click", () => { localStorage.removeItem("cadence_history"); renderHistory(); updateHistLink(); });
 }
 
 /* ---------- PDF (browser print -> renders every script/language) ---------- */

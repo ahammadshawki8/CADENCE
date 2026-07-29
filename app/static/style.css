@@ -53,7 +53,7 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .steps.hide{display:none}
 
 /* layout */
-#app{max-width:660px;margin:0 auto;padding:74px 20px 30px;min-height:calc(100vh - 62px);
+#app{max-width:720px;margin:0 auto;padding:74px 20px 30px;min-height:calc(100vh - 62px);
   display:flex;flex-direction:column;justify-content:center}
 .screen{display:none;text-align:center}
 .screen.show{display:flex;flex-direction:column;align-items:center;animation:pop-in .5s cubic-bezier(.2,.9,.3,1.25)}
@@ -208,13 +208,15 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .confetti i{position:absolute;width:9px;height:13px;border-radius:3px;top:-20px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(120vh) rotate(680deg);opacity:.85}}
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--ink);
-  color:#fff;font-weight:700;padding:13px 22px;border-radius:14px;box-shadow:var(--shadow);opacity:0;transition:.35s;z-index:40;max-width:90%}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;top:64px;right:16px;left:auto;transform:translateY(-14px);background:var(--ink);
+  color:#fff;font-weight:700;padding:12px 18px;border-radius:14px;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:45;max-width:min(340px,86vw);text-align:left;font-size:14px;line-height:1.4}
+.toast.show{opacity:1;transform:translateY(0)}
 
 /* info pages */
 .info .doc{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 28px;
   max-width:600px;margin:0 auto;text-align:left;box-shadow:var(--shadow-sm)}
+/* methodology breaks out to a wider, viewport-centered box so the flow diagrams breathe */
+#methodology .doc{max-width:840px;width:calc(100vw - 36px);margin:0 0 0 50%;transform:translateX(-50%)}
 .doc h4{font-size:16px;color:var(--brand);margin:16px 0 6px}
 .doc h4:first-child{margin-top:0}
 .doc p{color:#59547e;font-weight:500;margin-bottom:8px}
@@ -270,7 +272,14 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
   .arch .node small{flex:1}
   .arch .arrow{transform:rotate(90deg)}
   .info .doc{padding:20px 18px}
+  #methodology .doc{padding:20px 16px}
   .footlinks button,.footlinks a{font-size:12px;padding:7px 11px}
+  .tasksum{gap:8px}
+  .tasksum .tcard{flex:1 1 28%;min-width:0;padding:11px 8px}
+  .tcval{font-size:24px}
+  .rec-instructions{font-size:14px}
+  .ddkcard{padding:14px}
+  .toast{top:58px;right:10px;font-size:13px}
 }
 @media(max-width:360px){.logo{font-size:40px}.title{font-size:22px}.report{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
