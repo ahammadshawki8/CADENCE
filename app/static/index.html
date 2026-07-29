@@ -211,6 +211,7 @@
       <button class="cta ghost" id="pdfBtn"><svg class="ic"><use href="#i-download"/></svg> <span data-i18n="pdf">Download PDF report</span></button>
       <button class="cta" id="againBtn" data-go="record"><svg class="ic"><use href="#i-refresh"/></svg> <span data-i18n="again">Try again</span></button>
     </div>
+    <p class="mini"><button class="linklike" data-histlink data-info="history" hidden data-i18n="histView">view my history and trend</button></p>
   </section>
 
   <!-- ===== INFO PAGES (outside the linear flow) ===== -->
@@ -350,6 +351,14 @@
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
 
+  <!-- HISTORY / TREND -->
+  <section class="screen info" id="history">
+    <h2 class="title" data-i18n="histTitle">Your screening history</h2>
+    <p class="sub" data-i18n="histSub">Saved on this device only. Track how your screening indicator changes over time.</p>
+    <div class="doc" id="historyBody" style="margin-top:14px"></div>
+    <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
+  </section>
+
   <div class="toast" id="toast"></div>
 </main>
 
@@ -359,6 +368,7 @@
     <button data-info="methodology"><svg class="ic sm"><use href="#i-doc"/></svg> <span data-i18n="footMethod">Methodology</span></button>
     <button data-info="architecture"><svg class="ic sm"><use href="#i-cpu"/></svg> <span data-i18n="footArch">Architecture</span></button>
     <button data-info="license"><svg class="ic sm"><use href="#i-scale"/></svg> <span data-i18n="footLicense">License</span></button>
+    <button data-info="history" data-histlink hidden><svg class="ic sm"><use href="#i-chart"/></svg> <span data-i18n="footHistory">History</span></button>
     <a href="https://github.com/ahammadshawki8/CADENCE" target="_blank" rel="noopener"><svg class="ic sm"><use href="#i-github"/></svg> <span data-i18n="footGithub">GitHub</span></a>
   </div>
   <div class="footnote" data-i18n="footNote">Cadence · voice-based Parkinson’s screening · built by ahammadshawki8 · not a medical device</div>
