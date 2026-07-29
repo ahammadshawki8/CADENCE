@@ -153,7 +153,7 @@ function updateTakes() {
 }
 function purgeRecording() {
   // Privacy + reset: drop all captured takes and revoke the preview blob URL.
-  takes = []; wavBlob = null; passageIdx = 0; renderPassage();
+  takes = []; wavBlob = null; passageIdx = 0; renderPassage(); clearDdk();
   const pb = $("#playback");
   if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} pb.removeAttribute("src"); try { pb.load(); } catch (e) {} }
   pb.classList.add("hidden");
@@ -188,6 +188,44 @@ function encodeWav(s, sr) {
   return new Blob([v], { type: "audio/wav" });
 }
 
+/* ---------- DDK (pa-ta-ka) articulation test: self-contained optional recorder ---------- */
+let ddkResult = null, ddkRec = null, ddkChunks = [], ddkStream = null, ddkCtx = null, ddkTimer = null;
+$("#ddkBtn").addEventListener("click", toggleDdk);
+async function toggleDdk() {
+  const btn = $("#ddkBtn");
+  if (ddkRec && ddkRec.state === "recording") { ddkRec.stop(); return; }
+  try { ddkStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
+  catch (e) { return toast(t("toastMic")); }
+  ddkCtx = new (window.AudioContext || window.webkitAudioContext)();
+  ddkChunks = []; ddkRec = new MediaRecorder(ddkStream);
+  ddkRec.ondataavailable = e => e.data.size && ddkChunks.push(e.data);
+  ddkRec.onstop = finishDdk; ddkRec.start();
+  btn.classList.add("recording"); $(".ddklabel", btn).textContent = t("ddkStop");
+  ddkTimer = setTimeout(() => { if (ddkRec && ddkRec.state === "recording") ddkRec.stop(); }, 8000);
+}
+async function finishDdk() {
+  clearTimeout(ddkTimer);
+  ddkStream.getTracks().forEach(tr => tr.stop());
+  const btn = $("#ddkBtn"); btn.classList.remove("recording"); $(".ddklabel", btn).textContent = t("ddkAgain");
+  const blob = new Blob(ddkChunks, { type: ddkChunks[0]?.type || "audio/webm" });
+  const audio = await ddkCtx.decodeAudioData(await blob.arrayBuffer());
+  const wav = encodeWav(resampleMono(audio, 16000), 16000);
+  const fd = new FormData(); fd.append("audio", wav, "ddk.wav");
+  try {
+    const r = await fetch("/api/ddk", { method: "POST", body: fd });
+    const res = await r.json();
+    if (!res.ok) { toast(res.error || t("ddkFail")); return; }
+    ddkResult = res;
+    const el = $("#ddkResult"); el.hidden = false;
+    el.innerHTML = t("ddkInline", { rate: res.syllable_rate, reg: Math.round((res.regularity || 0) * 100) });
+  } catch (e) { toast(t("ddkFail") + " " + netMsg(e)); }
+}
+function clearDdk() {
+  ddkResult = null;
+  const el = $("#ddkResult"); if (el) { el.hidden = true; el.innerHTML = ""; }
+  const btn = $("#ddkBtn"); if (btn) $(".ddklabel", btn).textContent = t("ddkStart");
+}
+
 /* ---------- analyze ---------- */
 let MSGS = ["Listening to your voice…", "Measuring your pitch", "Reading your rhythm", "Checking voice clarity", "Almost there…"];
 let msgInt;
@@ -199,6 +237,7 @@ async function analyze() {
     const r = await fetch("/api/screen", { method: "POST", body: fd });
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
+    res.ddk = ddkResult;   // attach the optional articulation-test result to the report
     await minWait(t0); stopMsgs(); renderResults(res); go("results"); purgeRecording();
   } catch (e) { stopMsgs(); toast(t("toastAnalyzeFail") + " " + netMsg(e)); go("record"); }
 }
@@ -264,6 +303,18 @@ function renderResults(res, isExample) {
   }).join("");
   setTimeout(() => $$("#factors .bar i").forEach(i => i.style.width = i.dataset.w + "%"), 400);
   $("#report").innerHTML = res.acoustic_report.map(s => `<div class="stat"><div class="sv">${fmtVal(s.value)}</div><div class="sl">${t(REP_KEY[s.key] || s.key)}</div></div>`).join("");
+  const ddkBox = $("#ddkResultBox"), dk = res.ddk;
+  if (ddkBox) {
+    if (dk && !isExample) {
+      ddkBox.hidden = false;
+      $("#ddkStats").innerHTML =
+        `<div class="stat"><div class="sv">${dk.syllable_rate}</div><div class="sl">${t("ddkRate")}</div></div>` +
+        `<div class="stat"><div class="sv">${Math.round((dk.regularity || 0) * 100)}%</div><div class="sl">${t("ddkReg")}</div></div>` +
+        `<div class="stat"><div class="sv">${dk.n_syllables}</div><div class="sl">${t("ddkSyl")}</div></div>`;
+      const inRange = dk.syllable_rate >= 5 && (dk.regularity == null || dk.regularity >= 0.7);
+      $("#ddkReading").textContent = t(inRange ? "ddkOk" : "ddkFlag", { rate: dk.syllable_rate });
+    } else ddkBox.hidden = true;
+  }
   $("#resDisclaimer").textContent = t("disclaimer");
   // No celebratory confetti: a low indicator from one uncalibrated recording is not a clean bill of health.
 }

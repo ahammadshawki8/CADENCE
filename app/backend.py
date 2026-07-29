@@ -20,6 +20,7 @@ ROOT = APP_DIR.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from screen import screen, screen_many, DISCLAIMER  # noqa: E402
+from ddk import analyze_ddk  # noqa: E402
 from report_pdf import build_pdf  # noqa: E402
 
 app = FastAPI(title="Cadence", description="Voice-based Parkinson's screening (research demo)")
@@ -106,6 +107,29 @@ async def api_screen(audio: list[UploadFile] = File(...)):
                 os.remove(p)
             except OSError:
                 pass
+    return JSONResponse(result)
+
+
+@app.post("/api/ddk")
+async def api_ddk(audio: UploadFile = File(...)):
+    """Diadochokinetic (/pa-ta-ka/) analysis: syllable rate + rhythm regularity.
+    A transparent physical measurement, reported alongside the main screening."""
+    data = await audio.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty audio upload.")
+    suffix = Path(audio.filename or "ddk.wav").suffix or ".wav"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = tmp.name
+    try:
+        result = analyze_ddk(tmp_path)
+    except Exception as e:  # pragma: no cover
+        raise HTTPException(status_code=500, detail=f"DDK analysis failed: {e}")
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
     return JSONResponse(result)
 
 

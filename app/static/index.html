@@ -129,6 +129,13 @@
     </div>
     <p class="mini" id="recHint" data-i18n="hint">Read the whole passage clearly in a quiet spot (about 30 seconds).
       A longer, cleaner recording gives a far more reliable result.</p>
+
+    <div class="ddkcard" id="ddkCard">
+      <div class="ddkhead"><svg class="ic sm"><use href="#i-mic"/></svg> <span data-i18n="ddkTitle">Articulation speed test (optional)</span></div>
+      <p class="ddkinstr" data-i18n="ddkInstr">Say "pa-ta-ka, pa-ta-ka" over and over, as fast and steady as you can, for about 5 seconds. This classic test measures articulation speed and rhythm.</p>
+      <button class="ddkbtn" id="ddkBtn"><svg class="ic"><use href="#i-mic"/></svg> <span class="ddklabel" data-i18n="ddkStart">Start pa-ta-ka test</span></button>
+      <div class="ddkres" id="ddkResult" hidden></div>
+    </div>
   </section>
 
   <!-- 4 · ANALYZING -->
@@ -161,6 +168,12 @@
 
     <h3 class="sect"><svg class="ic sm"><use href="#i-chart"/></svg> <span data-i18n="card">Your voice report card</span></h3>
     <div class="report" id="report"></div>
+
+    <div id="ddkResultBox" hidden>
+      <h3 class="sect"><svg class="ic sm"><use href="#i-mic"/></svg> <span data-i18n="ddkCard">Articulation speed (pa-ta-ka)</span></h3>
+      <div class="report" id="ddkStats"></div>
+      <p class="mini" id="ddkReading" style="margin-top:10px"></p>
+    </div>
 
     <div class="ethics result-ethics">
       <span class="badge"><svg class="ic sm"><use href="#i-heart"/></svg> <span data-i18n="remember">remember</span></span>

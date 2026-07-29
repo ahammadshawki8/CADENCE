@@ -281,3 +281,14 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 .takedots i{width:13px;height:13px;border-radius:50%;background:var(--line);border:1px solid #dcd8f3;transition:background .3s,transform .3s,box-shadow .3s}
 .takedots i.on{background:var(--teal);border-color:var(--teal);transform:scale(1.18);box-shadow:0 0 0 4px var(--teal-soft)}
 .takelabel{font-weight:700;font-size:14px;color:var(--ink)}
+/* DDK (pa-ta-ka) articulation test */
+.ddkcard{margin:24px auto 6px;max-width:34rem;background:var(--brand-soft);border:1px solid var(--line);border-radius:18px;padding:16px 18px;text-align:center}
+.ddkhead{font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center;justify-content:center;font-size:16px}
+.ddkhead .ic{stroke:var(--brand)}
+.ddkinstr{color:var(--ink-soft);font-size:14px;font-weight:600;line-height:1.5;margin:8px 0 14px}
+.ddkbtn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:11px 20px;border-radius:999px;border:none;background:var(--brand);color:#fff;font-weight:700;font-size:15px;cursor:pointer;transition:transform .2s,background .2s}
+.ddkbtn:hover{transform:translateY(-2px)}
+.ddkbtn .ic{stroke:#fff;width:18px;height:18px}
+.ddkbtn.recording{background:var(--coral);animation:ddkpulse 1s ease-in-out infinite}
+@keyframes ddkpulse{0%,100%{box-shadow:0 0 0 0 var(--coral-soft)}50%{box-shadow:0 0 0 10px rgba(242,119,95,0)}}
+.ddkres{margin-top:12px;font-weight:700;color:var(--teal);font-size:14px}
