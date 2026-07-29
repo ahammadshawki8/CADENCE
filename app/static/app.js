@@ -126,7 +126,16 @@ async function finishRec() {
   if (seconds < 15) toast(t("toastShort"));
   $("#analyzeBtn").disabled = false;
 }
-function resetRecorder() { wavBlob = null; $("#analyzeBtn").disabled = true; $("#playback").classList.add("hidden"); $("#timer").textContent = t("tap"); }
+function purgeRecording() {
+  // Privacy: drop the recorded audio and revoke its blob URL so it is no longer
+  // accessible (called the moment results are shown, and on recorder reset).
+  wavBlob = null;
+  const pb = $("#playback");
+  if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} pb.removeAttribute("src"); try { pb.load(); } catch (e) {} }
+  pb.classList.add("hidden");
+  $("#analyzeBtn").disabled = true;
+}
+function resetRecorder() { purgeRecording(); $("#timer").textContent = t("tap"); }
 
 function resampleMono(ab, sr) {
   const n = ab.numberOfChannels, len = ab.length, mono = new Float32Array(len);
@@ -156,7 +165,7 @@ async function analyze() {
     const r = await fetch("/api/screen", { method: "POST", body: fd });
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
-    await minWait(t0); stopMsgs(); renderResults(res); go("results");
+    await minWait(t0); stopMsgs(); renderResults(res); go("results"); purgeRecording();
   } catch (e) { stopMsgs(); toast(t("toastAnalyzeFail") + " " + netMsg(e)); go("record"); }
 }
 function cycleMsgs() { let i = 0; $("#analyzeMsg").textContent = MSGS[0]; msgInt = setInterval(() => { i = (i + 1) % MSGS.length; $("#analyzeMsg").textContent = MSGS[i]; }, 900); }

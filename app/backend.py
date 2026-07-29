@@ -6,6 +6,7 @@ so the service is lightweight.
 """
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -90,6 +91,12 @@ async def api_screen(audio: UploadFile = File(...)):
         result = screen(tmp_path)
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
+    finally:
+        # Privacy: never retain the uploaded audio on the server.
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
     return JSONResponse(result)
 
 

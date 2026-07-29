@@ -56,15 +56,20 @@ def _explainer(bundle):
     return shap.LinearExplainer(lr, bg), scaler, lr
 
 
-def explain_vector(x_row, bundle=None, top_k: int = 6):
-    """x_row: (88,) eGeMAPS vector aligned to bundle['feature_names']."""
+def explain_vector(x_row, bundle=None, top_k: int = 6, prescaled: bool = False):
+    """x_row: (88,) eGeMAPS vector aligned to bundle['feature_names'].
+
+    prescaled=True means x_row is ALREADY standardized (e.g. per-recording channel
+    normalization in screen.py); the training scaler is then skipped so the SHAP
+    attribution matches the probability computed on the same normalized vector."""
     bundle = bundle or load_model()
     names = bundle["feature_names"]
     x = np.asarray(x_row, dtype=float).reshape(1, -1)
 
     explainer, scaler, lr = _explainer(bundle)
-    sv = np.asarray(explainer.shap_values(scaler.transform(x))).reshape(-1)
-    proba = float(bundle["pipeline"].predict_proba(x)[0, 1])
+    xs = x if prescaled else scaler.transform(x)
+    sv = np.asarray(explainer.shap_values(xs)).reshape(-1)
+    proba = float(lr.predict_proba(xs)[0, 1])
 
     fam_sum: dict[str, float] = {}
     for name, s in zip(names, sv):

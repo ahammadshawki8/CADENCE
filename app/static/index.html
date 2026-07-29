@@ -198,10 +198,16 @@
         <li><b>Honest cross-database validation.</b> Validated across three independently-collected
           corpora in three languages - Italian, English (MDVR-KCL) and Spanish (NeuroVoz) - training
           on one and testing on another, each a different language and microphone.</li>
-        <li><b>Domain-adversarial adaptation.</b> In cross-database validation, a gradient-reversal
-          domain classifier that forces channel-invariant features lifts our honest cross-lingual AUC
-          from ~0.72 to <b>~0.80</b> on the task-matched reading test - relying on the disease signal,
-          not the recording equipment.</li>
+        <li><b>Domain-adversarial adaptation.</b> A gradient-reversal domain classifier forces
+          channel-invariant features. On the task-matched reading test it lifts honest cross-lingual
+          AUC from ~0.72 to ~0.80; adding target entropy regularization pushes it to <b>~0.84</b>.</li>
+        <li><b>A control that keeps us honest.</b> We re-train with the source labels shuffled: any
+          score that stays high with a useless source is exploiting the target recording's own
+          structure, not transferring disease knowledge. This exposed a tempting ~0.91 average as
+          confound leakage; only the ~0.84 clean-target result survives the control.</li>
+        <li><b>On-device channel normalization.</b> Every microphone is a new "channel". At screening
+          time we standardize your recording against its own statistics, removing the device offset
+          that would otherwise bias every score - so the result reflects your voice, not your mic.</li>
         <li><b>Explainability.</b> SHAP attributes each screening result to specific voice biomarkers.</li>
         <li><b>Language-independent.</b> Cadence measures voice quality and prosody, not words, so it
           works across languages; the reading passage is offered in several languages. Validated so
@@ -209,13 +215,14 @@
       </ul>
       <h4>Result</h4>
       <p>On the strict unseen-channel test, deep speech embeddings (wav2vec2 / HuBERT) collapse to
-      ≈ 0.60, while interpretable biomarkers transfer at ≈ 0.72 and, with domain-adversarial
-      adaptation, reach <b>≈ 0.80 cross-lingual AUC</b> on connected reading speech. Two honest checks
-      keep us grounded: pooling several corpora generalises to a held-out corpus at ≈ 0.69-0.76 on its
-      own, and the classic sustained-vowel /a/ biomarker does <b>not</b> transfer across corpora
-      (≈ 0.34-0.46, at or below chance) - proof that within-corpus vowel "accuracy" is the microphone,
-      not the disease. These are honest numbers across languages and microphones, not inflated
-      single-dataset scores.</p>
+      ≈ 0.60, interpretable biomarkers transfer at ≈ 0.72, and domain-adversarial adaptation with
+      entropy regularization reaches a shuffle-verified <b>≈ 0.84 cross-lingual AUC</b> on connected
+      reading speech. Two further honest checks keep us grounded: pooling several corpora generalises
+      to a held-out corpus at ≈ 0.69-0.76 on its own, and the classic sustained-vowel /a/ biomarker
+      does <b>not</b> transfer across corpora (≈ 0.34-0.46, at or below chance) - proof that
+      within-corpus vowel "accuracy" is the microphone, not the disease. A screening from a single
+      recording on a new device is an uncalibrated indicator, never a diagnosis - these are honest
+      numbers across languages and microphones, not inflated single-dataset scores.</p>
     </div>
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
