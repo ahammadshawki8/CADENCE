@@ -142,24 +142,28 @@ def _windows(y):
     return [y[i:i + win] for i in range(0, len(y) - win + 1, hop)][:16]
 
 
-def screen(wav, sr: int | None = None) -> dict:
-    bundle = _get_bundle()
+def _extract_windows(wav, sr=None):
+    """One recording -> (ok, message, voiced_seconds, window_feature_matrix|None)."""
     y = _load_audio(wav, sr)
     ok, msg, voiced, y_trim = _quality_gate(y)
     if not ok:
-        return {"ok": False, "error": msg, "disclaimer": DISCLAIMER}
+        return False, msg, voiced, None
+    vecs = np.vstack([egemaps_signal(w, SAMPLE_RATE)[0] for w in _windows(y_trim)])
+    return True, "", voiced, vecs
 
+
+def _build_result(vecs, voiced_total, n_recordings) -> dict:
+    """Score a pooled window-feature matrix (from one OR several recordings)."""
+    bundle = _get_bundle()
     names = bundle["feature_names"]
     pipe = bundle["pipeline"]
-    vecs = [egemaps_signal(w, SAMPLE_RATE)[0] for w in _windows(y_trim)]
-    vecs = np.vstack(vecs)
     med = np.median(vecs, axis=0)
     # Score with the trained scaler+classifier. (We tried per-recording channel
     # normalization to counter the deployment confound, but on held-out channels it
-    # merely compressed every score toward ~0.5 - healthy voices then read ~50% with
-    # almost no HC/PD separation - while the trained scaler keeps healthy speech low
-    # with a wider gap at the same AUC. So we keep the trained scaler and are honest,
-    # via the UI, that a single-device score is an uncalibrated indicator.)
+    # merely compressed every score toward ~0.5 with almost no HC/PD separation, while
+    # the trained scaler keeps healthy speech low with a wider gap at the same AUC. The
+    # UI is honest that a single-device score is an uncalibrated indicator - and pooling
+    # several passages reduces the per-recording noise, sharpening the estimate.)
     win_probas = pipe.predict_proba(vecs)[:, 1]
     proba = float(pipe.predict_proba(med.reshape(1, -1))[0, 1])
     confidence = round(float(max(0.0, 1.0 - 2.0 * np.std(win_probas))), 2)
@@ -179,8 +183,9 @@ def screen(wav, sr: int | None = None) -> dict:
         "flagged": bool(proba >= threshold),
         "risk_band": band,
         "confidence": confidence,
-        "voiced_sec": round(voiced, 1),
+        "voiced_sec": round(voiced_total, 1),
         "n_windows": int(vecs.shape[0]),
+        "n_recordings": int(n_recordings),
         "narrative": make_narrative(proba, band, exp["top"], confidence),
         "top_factors": exp["top"],
         "acoustic_report": report,
@@ -191,6 +196,33 @@ def screen(wav, sr: int | None = None) -> dict:
         },
         "disclaimer": DISCLAIMER,
     }
+
+
+def screen(wav, sr: int | None = None) -> dict:
+    ok, msg, voiced, vecs = _extract_windows(wav, sr)
+    if not ok:
+        return {"ok": False, "error": msg, "disclaimer": DISCLAIMER}
+    return _build_result(vecs, voiced, 1)
+
+
+def screen_many(wavs, srs=None) -> dict:
+    """Pool the windows from several recordings/passages into ONE aggregated result.
+
+    Averaging multiple passages reduces the random per-recording noise (which passage,
+    which moment, background sounds), giving a steadier, sharper estimate. It cannot
+    remove the systematic microphone/channel bias (all takes share one device)."""
+    all_vecs, voiced_total, used, errs = [], 0.0, 0, []
+    for i, wav in enumerate(wavs):
+        sr = srs[i] if srs else None
+        ok, msg, voiced, vecs = _extract_windows(wav, sr)
+        if ok:
+            all_vecs.append(vecs); voiced_total += voiced; used += 1
+        else:
+            errs.append(msg)
+    if used == 0:
+        return {"ok": False, "error": errs[0] if errs else "No usable audio in the recordings.",
+                "disclaimer": DISCLAIMER}
+    return _build_result(np.vstack(all_vecs), voiced_total, used)
 
 
 if __name__ == "__main__":

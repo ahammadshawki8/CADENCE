@@ -115,6 +115,7 @@
       <div class="timer" id="timer">tap the mic to start</div>
     </div>
     <audio id="playback" controls class="playback hidden"></audio>
+    <div class="mini" id="takeStatus" hidden style="margin:.3rem 0 .5rem;font-weight:600"></div>
     <button class="cta" id="analyzeBtn" data-go="analyzing" disabled><span data-i18n="analyse">Analyse my voice</span> <svg class="ic"><use href="#i-next"/></svg></button>
     <div class="altrow" style="display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
       <label class="linklike" id="uploadLbl" for="fileInput" data-i18n="upload" style="cursor:pointer">or upload an audio file (.wav)</label>
@@ -138,6 +139,7 @@
   <section class="screen" id="results">
     <div class="confetti" id="confetti" aria-hidden="true"></div>
     <h2 class="title" id="resTitle">Your voice report</h2>
+    <div class="mini" id="basedOn" hidden style="margin:-.2rem 0 .4rem;font-weight:600"></div>
     <div class="gaugewrap">
       <svg class="gauge" viewBox="0 0 200 200" width="208" height="208">
         <circle class="g-track" cx="100" cy="100" r="82"></circle>

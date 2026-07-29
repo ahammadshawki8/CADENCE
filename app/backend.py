@@ -19,7 +19,7 @@ APP_DIR = Path(__file__).resolve().parent
 ROOT = APP_DIR.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from screen import screen, DISCLAIMER  # noqa: E402
+from screen import screen, screen_many, DISCLAIMER  # noqa: E402
 from report_pdf import build_pdf  # noqa: E402
 
 app = FastAPI(title="Cadence", description="Voice-based Parkinson's screening (research demo)")
@@ -79,24 +79,33 @@ def examples():
 
 
 @app.post("/api/screen")
-async def api_screen(audio: UploadFile = File(...)):
-    data = await audio.read()
-    if not data:
-        raise HTTPException(status_code=400, detail="Empty audio upload.")
-    suffix = Path(audio.filename or "rec.wav").suffix or ".wav"
-    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-        tmp.write(data)
-        tmp_path = tmp.name
+async def api_screen(audio: list[UploadFile] = File(...)):
+    """Accepts one OR several recordings (multiple `audio` parts). Several passages are
+    pooled into one steadier result (screen_many); a single file behaves as before."""
+    paths = []
     try:
-        result = screen(tmp_path)
+        for up in audio:
+            data = await up.read()
+            if not data:
+                continue
+            suffix = Path(up.filename or "rec.wav").suffix or ".wav"
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(data)
+                paths.append(tmp.name)
+        if not paths:
+            raise HTTPException(status_code=400, detail="Empty audio upload.")
+        result = screen(paths[0]) if len(paths) == 1 else screen_many(paths)
+    except HTTPException:
+        raise
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
     finally:
         # Privacy: never retain the uploaded audio on the server.
-        try:
-            os.remove(tmp_path)
-        except OSError:
-            pass
+        for p in paths:
+            try:
+                os.remove(p)
+            except OSError:
+                pass
     return JSONResponse(result)
 
 

@@ -21,7 +21,7 @@ $$("[data-go]").forEach(b => b.addEventListener("click", e => {
   if (b.disabled) return; ripple(e, b);
   const dest = b.dataset.go;
   if (dest === "analyzing") return analyze();
-  if (dest === "record" && current === "results") resetRecorder();
+  if (dest === "record" && (current === "results" || current === "consent")) resetRecorder();
   go(dest);
 }));
 $("#homeBtn").addEventListener("click", () => go("welcome"));
@@ -42,7 +42,7 @@ function netMsg(e) { return (e instanceof TypeError) ? t("toastNet") : e.message
 $("#agree").addEventListener("change", e => { $("#toRecord").disabled = !e.target.checked; });
 
 /* ---------- recording ---------- */
-let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null;
+let mediaRec, chunks = [], stream, audioCtx, analyser, meterRAF, seconds = 0, timerInt, wavBlob = null, takes = [];
 const micBtn = $("#micBtn"), recwrap = $("#record .recwrap");
 buildMeter();
 function buildMeter() { const m = $("#meter"); m.innerHTML = ""; for (let i = 0; i < 16; i++) m.appendChild(document.createElement("i")); }
@@ -122,30 +122,40 @@ async function finishRec() {
   const blob = new Blob(chunks, { type: chunks[0]?.type || "audio/webm" });
   const audio = await audioCtx.decodeAudioData(await blob.arrayBuffer());
   wavBlob = encodeWav(resampleMono(audio, 16000), 16000);
-  const pb = $("#playback"); pb.src = URL.createObjectURL(wavBlob); pb.classList.remove("hidden");
+  addTake(wavBlob, "passage" + (takes.length + 1) + ".wav");
   if (seconds < 15) toast(t("toastShort"));
+}
+/* Multi-passage: each recorded/uploaded take is pooled server-side into one steadier
+   result (averaging passages reduces per-recording noise). */
+function addTake(blob, name) {
+  takes.push({ blob, name });
+  const pb = $("#playback");
+  if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} }
+  pb.src = URL.createObjectURL(blob); pb.classList.remove("hidden");
   $("#analyzeBtn").disabled = false;
+  updateTakes();
+}
+function updateTakes() {
+  const n = takes.length, el = $("#takeStatus");
+  if (el) { el.hidden = n === 0; el.textContent = t("takes", { n }); }
 }
 function purgeRecording() {
-  // Privacy: drop the recorded audio and revoke its blob URL so it is no longer
-  // accessible (called the moment results are shown, and on recorder reset).
-  wavBlob = null;
+  // Privacy + reset: drop all captured takes and revoke the preview blob URL.
+  takes = []; wavBlob = null;
   const pb = $("#playback");
   if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} pb.removeAttribute("src"); try { pb.load(); } catch (e) {} }
   pb.classList.add("hidden");
   $("#analyzeBtn").disabled = true;
+  updateTakes();
 }
 function resetRecorder() { purgeRecording(); $("#timer").textContent = t("tap"); }
 
-/* Upload an existing audio file (feed straight into /api/screen, no mic round-trip). */
+/* Upload an existing audio file (adds a take; fed straight into /api/screen). */
 $("#fileInput").addEventListener("change", (e) => {
   const f = e.target.files && e.target.files[0];
   e.target.value = "";                      // allow re-selecting the same file
   if (!f) return;
-  purgeRecording();
-  wavBlob = f;                              // a File is a Blob and carries .name
-  const pb = $("#playback"); pb.src = URL.createObjectURL(f); pb.classList.remove("hidden");
-  $("#analyzeBtn").disabled = false;
+  addTake(f, f.name);                       // a File is a Blob and carries .name
   $("#timer").textContent = f.name;
 });
 
@@ -170,9 +180,9 @@ function encodeWav(s, sr) {
 let MSGS = ["Listening to your voice…", "Measuring your pitch", "Reading your rhythm", "Checking voice clarity", "Almost there…"];
 let msgInt;
 async function analyze() {
-  if (!wavBlob) return toast(t("toastRecordFirst"));
+  if (!takes.length) return toast(t("toastRecordFirst"));
   go("analyzing"); cycleMsgs();
-  const fd = new FormData(); fd.append("audio", wavBlob, (wavBlob && wavBlob.name) || "rec.wav"); const t0 = Date.now();
+  const fd = new FormData(); takes.forEach(tk => fd.append("audio", tk.blob, tk.name)); const t0 = Date.now();
   try {
     const r = await fetch("/api/screen", { method: "POST", body: fd });
     const res = await r.json();
@@ -218,6 +228,8 @@ function renderResults(res, isExample) {
   const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
   $("#resTitle").textContent = t(isExample ? "resTitleEx" : "resTitle");
   $("#calNote").hidden = !!isExample;   // honesty note only for a live single-device recording
+  const nrec = res.n_recordings || 1, bo = $("#basedOn");
+  if (bo) { bo.hidden = nrec < 2; bo.textContent = t("basedOn", { n: nrec }); }
   const fill = $("#gFill"); fill.style.stroke = BAND_COLOR[band] || BAND_COLOR.low; fill.style.strokeDashoffset = 515;
   requestAnimationFrame(() => setTimeout(() => { fill.style.strokeDashoffset = 515 * (1 - pct / 100); }, 60));
   countUp($("#gPct"), pct);
