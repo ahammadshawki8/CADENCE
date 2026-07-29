@@ -168,8 +168,23 @@ The Italian dataset has a severe recording-condition confound between cohorts. E
   Spanish). Leave-one-corpus-out ≈ 0.69–0.76 (pooling supplies robustness; DANN's win is
   single-source→target, not pooled). **Sustained vowel /a/ Italian↔NeuroVoz = 0.34–0.46 (negative
   control — classic biomarker is pure channel).** Figshare telephone vowels → 0.39 (8kHz gap too big).
+- **Pushed honest ceiling ≈ 0.84** (Italian→MDVR, entropy-regularized seed-ensembled DANN), up from
+  0.72 baseline / 0.80 plain DANN. **Shuffled-source control** (`dann.py honest`) verifies it: real
+  0.84 vs shuffled 0.38 = REAL. The ~0.91 bidirectional average is confound-inflated (md→it shuffled
+  0.71+) and is NOT claimed. Entropy-min is transductive → benchmark only; app ships interpretable model.
 
 ## Progress Log
+- 2026-07-28 (push): **Accuracy-push research sprint -> honest ceiling ~0.84 + a rigor win.** Deadline
+  extended to Aug 16. Researched cross-corpus PD literature (CORAL+GRL mPower Frontiers 2026, kernel
+  mean matching, VADA/DIRT-T entropy min, ParkMAE). Built `push.py`/`push_dann.py`/`push_window.py`/
+  `push_augment.py` sweeping: seed-ensembling (0.80->0.83), **target entropy minimization (->0.84)**,
+  CORAL (no gain), channel feature-pruning (HURTS 0.60), robust scaling (nil), windowing (nil on clean
+  dir), extra source data (nil), source channel augmentation (nil). **CRITICAL: shuffled-source control**
+  (`dann.py honest`) exposed that the tempting ~0.91 bidirectional average was the Italian confound
+  leaking back via transductive entropy-min (md->it shuffled-source still 0.71+). Only it->md (clean
+  MDVR target) survives: real 0.84, shuffled 0.38 = REAL transfer. **Honest ceiling = ~0.84**, up from
+  0.72; entropy-min is transductive (benchmark, not deployed - app keeps interpretable eGeMAPS). Folded
+  entmin+coral+shuffle-control into `dann.py`; RESULTS.md section 5, README, PLAN updated. PLATEAU hit.
 - 2026-07-28: **NeuroVoz integrated (3rd corpus / 3rd language) + msrOS adopted.** Access granted;
   `neurovoz_v3.zip` (962 MB, 3639 wav, 44.1 kHz, 108 subj) → `build_neurovoz_index()` in `external.py`
   (`index_neurovoz.parquet`). Extended `dann.py`: dataset+task-aware `_features`, `evaluate_lodo`

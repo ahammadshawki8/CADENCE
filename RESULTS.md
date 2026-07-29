@@ -113,6 +113,52 @@ thesis: within-corpus sustained-vowel "success" is the recording channel, not th
 discriminative direction even *flips* between corpora. Connected speech transfers (~0.80); the vowel
 does not. Papers reporting high within-corpus vowel accuracy are measuring the microphone.
 
+## 5. Pushing the ceiling - and the control that kept us honest
+We ran a systematic engineering sweep to beat ~0.80, measuring every strategy on the honest
+Italian<->MDVR reading metric (both directions, AUC). Probabilities are seed-ensembled before AUC.
+
+| Strategy | Honest (Italian->MDVR) | Note |
+|---|---|---|
+| eGeMAPS + logistic (naive) | 0.72 | baseline |
+| + plain DANN | 0.81 | domain-adversarial |
+| + **seed-ensembling** the DANN | 0.83 | variance reduction (free) |
+| + **target entropy minimization** | **0.84** | VADA/DIRT-T family; unsupervised |
+| CORAL covariance alignment | no gain | |
+| channel feature-pruning | **worse (0.60)** | disease & channel entangled in same features |
+| robust / quantile scaling | no gain | |
+| window segmentation + aggregation | no gain (0.83) | |
+| extra source data (+ NeuroVoz) | no gain (0.84) | |
+| source channel augmentation | no gain (0.82) | |
+
+**Entropy minimization** (encourage confident, well-separated predictions on the unlabelled target -
+the low-density-separation assumption) was the one real lever, lifting the honest number to ~0.84.
+Everything else plateaued.
+
+### The shuffled-source control (the important part)
+A naive reading of the two directions looked even better - averaging them gave ~0.91, with the
+MDVR->Italian direction hitting ~0.93-0.96. **We did not trust it, and we were right.** We ran a
+control that trains with the **source labels shuffled**: with a useless source, any score that stays
+high must be coming from the *target's own* structure, not from transferred disease knowledge - and
+the Italian corpus's structure is exactly the acquisition confound.
+
+| Direction | real AUC | **shuffled-source** | verdict |
+|---|---|---|---|
+| Italian -> MDVR (clean target) | 0.84 | **0.38** (collapses) | **REAL transfer** |
+| MDVR -> Italian (confounded target) | 0.96 | **0.71** (stays high) | confound-inflated |
+
+Entropy minimization on the *Italian target* was silently re-discovering the within-Italian
+confound (a shuffled source still scores 0.71+). On the *clean MDVR target* it collapses to below
+chance when the source is shuffled - proof the ~0.84 there is genuine cross-corpus PD transfer.
+
+**Honest conclusions.**
+- The trustworthy honest ceiling is **~0.84 AUC** (Italian -> MDVR, shuffle-verified), up from 0.72.
+- The tempting **~0.91 bidirectional average was a mirage** - the same confound this project exists to
+  expose, leaking back in through a sophisticated method. We caught our own model cheating.
+- Entropy minimization is **transductive** (it needs a batch of target-domain recordings at train
+  time), so it is a benchmark result, not a single-user deployment method. The shipped app keeps the
+  interpretable eGeMAPS model; the domain-adversarial network is the research headline.
+- Reproduce the control with `python src/dann.py honest`.
+
 ## Reproduce
 ```bash
 python src/data.py          # Italian corpus
@@ -120,4 +166,6 @@ python src/external.py      # MDVR-KCL + NeuroVoz indices (after unzipping into 
 python src/train_baseline.py  # within-dataset + confound controls
 python src/run_xdb.py         # cross-database transfer
 python src/dann.py all        # pairwise + leave-one-corpus-out + vowel controls (all 3 corpora)
+python src/dann.py honest     # pushed method (entropy-reg DANN) + shuffled-source control
+python src/push.py            # full engineering sweep (CORAL, featsel, robust, ensemble, ...)
 ```

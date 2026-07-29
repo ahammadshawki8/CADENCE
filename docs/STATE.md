@@ -2,8 +2,8 @@
 
 <!-- msr:digest:start -->
 **Project:** Cadence | **Archetype:** research (+ shipped demo app) | **Updated:** 2026-07-28
-**Now:** NeuroVoz (3rd corpus, Spanish) integrated + evaluated; RESULTS/README/PLAN/app updated. Uncommitted — ready to commit as ahammadshawki8.
-**Next:** Commit the NeuroVoz work + msrOS files, then Devpost writeup + HF Spaces deploy.
+**Now:** Accuracy-push sprint DONE — honest ceiling ~0.84 (entropy-reg DANN, shuffle-verified); plateau hit; committed. Deadline 2026-08-16.
+**Next:** Devpost writeup (lead with the shuffled-source-control rigor story) + HF Spaces deploy.
 **Blocked:** none.
 <!-- msr:digest:end -->
 
@@ -46,6 +46,13 @@ Choices that would otherwise get re-litigated. Reason recorded, not just the cho
   at 0.34-0.46 (≤ chance) — the strongest single proof of the confound. Framed as a finding, not a bug.
 - [D12] **DANN's win is single-source→single-target (Italian↔MDVR reading ~0.80), not pooled.** With
   multiple diverse source corpora, pooling supplies the robustness; adversarial adaptation adds nil.
+- [D13] **Honest ceiling is ~0.84 (Italian→MDVR), NOT the ~0.91 bidirectional average.** Entropy-min
+  lifts the clean direction to 0.84 (shuffle-verified: 0.38 when source shuffled). The md→it direction
+  and any average with it are confound-inflated (shuffled-source still 0.71+) — never claim 0.91.
+- [D14] **Entropy minimization is transductive** (needs a target batch) → a benchmark method, not for
+  single-user deployment. The shipped app keeps the interpretable eGeMAPS model.
+- [D15] **Shuffled-source control is now standard** (`dann.py honest`): any cross-corpus score that
+  stays high with randomized source labels is exploiting the target's confound, not transferring.
 
 ## Open threads
 
@@ -66,7 +73,10 @@ Choices that would otherwise get re-litigated. Reason recorded, not just the cho
 
 Last ten meaningful commits; `git log` is the permanent record.
 
-- [C0] 2026-07-28 — (uncommitted) NeuroVoz integrated as 3rd corpus/language; `external.py` loader,
+- [C-1] 2026-07-28 — (uncommitted) Accuracy-push sprint: entropy-reg DANN -> honest ~0.84;
+  shuffled-source control caught confound-inflation; push.py/push_dann/push_window/push_augment;
+  dann.py gains entmin+coral+evaluate_honest; RESULTS §5, README, PLAN updated.
+- [C0] 2026-07-28 — `36e1679` NeuroVoz integrated as 3rd corpus/language; `external.py` loader,
   `dann.py` lodo + vowel evals; RESULTS §4, README, PLAN, app pages updated; msrOS CLAUDE.md + STATE.md.
 - [C1] 2026-07-28 — `a308b4d` Made project hackathon-agnostic: removed contest name from docs + app.
 - [C2] 2026-07-22 — `32dca5b` Finalisation pass: de-staled README, PLAN, requirements, info pages.

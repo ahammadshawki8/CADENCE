@@ -32,12 +32,16 @@ embeddings (what most SOTA/commercial systems use) reach ~0.9 only under softer 
 on our strict test they collapse.
 
 The screen is validated across **three independently-collected corpora in three languages** (Italian,
-English, Spanish/NeuroVoz). Two honest findings sharpen the story: (1) once several diverse corpora
+English, Spanish/NeuroVoz). Three honest findings sharpen the story: (1) once several diverse corpora
 are pooled, that diversity alone gives ~0.69–0.76 on a held-out corpus and adversarial adaptation
 adds little on top — DANN's clear win is the single-source→single-target case; (2) the field's
 favourite biomarker, the **sustained vowel /a/, does not transfer at all** across corpora (AUC ~0.34–
-0.46, at/below chance) — a decisive demonstration that within-corpus vowel "accuracy" is the
-microphone, not the disease. See `RESULTS.md` for the full tables and ablations.
+0.46, at/below chance) — within-corpus vowel "accuracy" is the microphone, not the disease; (3) a
+systematic engineering push (CORAL, feature selection, windowing, augmentation, **entropy-regularized
+domain adaptation**) raises the honest cross-corpus AUC to **~0.84** — but a **shuffled-source control**
+exposed that a tempting ~0.91 "average" was our own model re-discovering the Italian confound, and
+only the clean-target direction survives the control. We caught our own method cheating. See
+`RESULTS.md` §5 for the full sweep and the control.
 
 ## Method
 Raw audio → 16 kHz → **eGeMAPS** acoustic functionals (openSMILE) → StandardScaler + Logistic

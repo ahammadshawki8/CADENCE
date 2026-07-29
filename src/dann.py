@@ -52,7 +52,22 @@ class DANN(nn.Module):
 
     def forward(self, x, lamb=0.0):
         f = self.enc(x)
-        return self.pd(f), self.dom(grad_reverse(f, lamb))
+        return self.pd(f), self.dom(grad_reverse(f, lamb)), f
+
+
+def _coral_loss(fs, ft):
+    """Align source/target feature covariance (Sun & Saenko, 2016)."""
+    d = fs.shape[1]
+    fs = fs - fs.mean(0, keepdim=True); ft = ft - ft.mean(0, keepdim=True)
+    cs = (fs.T @ fs) / (len(fs) - 1 + 1e-6)
+    ct = (ft.T @ ft) / (len(ft) - 1 + 1e-6)
+    return ((cs - ct) ** 2).sum() / (4 * d * d)
+
+
+def _entropy(logits):
+    """Mean prediction entropy (minimized for low-density separation; VADA/DIRT-T family)."""
+    p = torch.softmax(logits, 1)
+    return -(p * torch.log(p + 1e-8)).sum(1).mean()
 
 
 # Each corpus contributes its CONNECTED-SPEECH task so the three domains are
@@ -89,31 +104,39 @@ def _egemaps(dataset):
     return _features(dataset, "egemaps")
 
 
-def train_dann(Xs, ys, Xt, seed=0, epochs=300, lr=1e-3, wd=1e-3, adapt=True):
+def train_dann(Xs, ys, Xt, seed=0, epochs=300, lr=1e-3, wd=1e-3, adapt=True,
+               hid=64, feat=32, p=0.4, coral=0.0, entmin=0.0, lamb_max=1.0):
+    """Unsupervised domain adaptation source->target. Optional add-ons (0.0 = off):
+      coral   : CORAL feature-covariance alignment loss
+      entmin  : target entropy minimization (TRANSDUCTIVE - needs the target batch; a
+                benchmark tool, not a single-user deployment method). Ramped with lambda.
+    Defaults reproduce the original plain DANN exactly."""
     torch.manual_seed(seed); np.random.seed(seed)
     sc = StandardScaler().fit(np.vstack([Xs, Xt]))
-    Xs_, Xt_ = sc.transform(Xs), sc.transform(Xt)
-    xs = torch.tensor(Xs_, dtype=torch.float32); yy = torch.tensor(ys)
-    xt = torch.tensor(Xt_, dtype=torch.float32)
-    model = DANN(Xs.shape[1])
+    xs = torch.tensor(sc.transform(Xs), dtype=torch.float32); yy = torch.tensor(ys)
+    xt = torch.tensor(sc.transform(Xt), dtype=torch.float32)
+    model = DANN(Xs.shape[1], hid, feat, p)
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
     w = torch.tensor([1.0, (ys == 0).sum() / max(1, (ys == 1).sum())], dtype=torch.float32)
     ce_pd = nn.CrossEntropyLoss(weight=w); ce_dom = nn.CrossEntropyLoss()
     for ep in range(epochs):
         model.train()
-        lamb = (2.0 / (1.0 + np.exp(-10 * ep / epochs)) - 1.0) if adapt else 0.0
+        lamb = lamb_max * (2.0 / (1.0 + np.exp(-10 * ep / epochs)) - 1.0) if adapt else 0.0
         opt.zero_grad()
-        pd_s, dom_s = model(xs, lamb)
+        pd_s, dom_s, fs = model(xs, lamb)
         loss = ce_pd(pd_s, yy)
         if adapt:
-            _, dom_t = model(xt, lamb)
+            pd_t, dom_t, ft = model(xt, lamb)
             dl = torch.cat([torch.zeros(len(xs), dtype=torch.long), torch.ones(len(xt), dtype=torch.long)])
             loss = loss + ce_dom(torch.cat([dom_s, dom_t]), dl)
+            if coral:
+                loss = loss + coral * _coral_loss(fs, ft)
+            if entmin:
+                loss = loss + entmin * lamb * _entropy(pd_t)
         loss.backward(); opt.step()
     model.eval()
     with torch.no_grad():
-        p = torch.softmax(model(xt, 0.0)[0], dim=1)[:, 1].numpy()
-    return p
+        return torch.softmax(model(xt, 0.0)[0], dim=1)[:, 1].numpy()
 
 
 def evaluate(source="italian", target="mdvr", seeds=range(8), kind="egemaps"):
@@ -195,9 +218,44 @@ def evaluate_lodo(target, kind="egemaps", seeds=range(8)):
     return np.mean(dann)
 
 
+def evaluate_honest(kw=None, seeds=range(16)):
+    """The pushed method (entropy-regularized DANN) with the SHUFFLED-SOURCE CONTROL.
+
+    Seed-ensembles target probabilities, then reports each direction alongside a control
+    where the SOURCE labels are shuffled: if a score stays high with a useless source, the
+    method is exploiting the TARGET's own (possibly confounded) structure rather than
+    transferring real disease knowledge. Only a score that COLLAPSES under shuffling is
+    trustworthy. The Italian corpus carries a residual acquisition confound, so the honest
+    metric is the direction whose target is the cleaner MDVR corpus (italian -> mdvr)."""
+    kw = kw if kw is not None else dict(entmin=2.0)
+    rng = np.random.default_rng(0)
+
+    def score(src, tgt, shuffle):
+        Xs, ys = _features(src); Xt, yt = _features(tgt)
+        probs = []
+        for s in seeds:
+            yy = ys.copy()
+            if shuffle:
+                rng.shuffle(yy)
+            probs.append(train_dann(Xs, yy, Xt, seed=s, **kw))
+        return roc_auc_score(yt, np.mean(probs, axis=0))
+
+    print(f"\n=== entropy-regularized DANN + shuffled-source control  (config={kw}) ===")
+    print(f"{'direction':<26}{'real AUC':>10}{'shuffled-src':>14}   verdict")
+    for src, tgt, clean in [("italian", "mdvr", True), ("mdvr", "italian", False)]:
+        real, shuf = score(src, tgt, False), score(src, tgt, True)
+        v = "REAL transfer" if (clean and real - shuf > 0.2) else ("CONFOUND-inflated" if not clean else "ok")
+        tag = " (HONEST: clean target)" if clean else " (Italian target: confounded)"
+        print(f"{src[:2]}->{tgt[:2]}{tag:<20}{real:>10.3f}{shuf:>14.3f}   {v}")
+
+
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "all"
+
+    if mode == "honest":
+        evaluate_honest()
+        raise SystemExit(0)
 
     if mode in ("all", "pairwise"):
         print("\n########## PAIRWISE (connected speech, eGeMAPS) ##########")
