@@ -312,11 +312,16 @@ function renderResults(res, isExample) {
     cc.hidden = false; cc.className = "confchip"; cc.style.color = lvl[1];
     cc.innerHTML = icon(lvl[2]) + t("confPrefix") + " " + t(lvl[0]) + " · " + t("confWindows", { n: res.n_windows || "" });
   } else { cc.hidden = true; }
-  const maxS = Math.max(...res.top_factors.map(f => Math.abs(f.shap))) || 1;
-  $("#factors").innerHTML = res.top_factors.map((f, i) => {
-    const pd = f.shap > 0, w = Math.round(Math.abs(f.shap) / maxS * 100);
+  // Group the biomarker families into the clinical speech subsystems a clinician uses.
+  const SUBSYS = [["phonation", ["jitter", "shimmer", "hnr"], "i-heart"], ["prosody", ["pitch", "loudness"], "i-chart"],
+                  ["articulation", ["articulation", "spectral"], "i-search"], ["rate", ["rhythm"], "i-doc"]];
+  const fam = {}; (res.all_factors || res.top_factors || []).forEach(f => { fam[f.family] = f.shap; });
+  const rows = SUBSYS.map(([key, fams, ic]) => ({ key, ic, shap: fams.reduce((s, k) => s + (fam[k] || 0), 0) }));
+  const maxS = Math.max(...rows.map(r => Math.abs(r.shap)), 1e-6);
+  $("#factors").innerHTML = rows.map((r, i) => {
+    const pd = r.shap > 0, w = Math.round(Math.abs(r.shap) / maxS * 100);
     return `<div class="factor" style="--d:${0.14 * i + 0.2}s">
-      <div class="frow"><span class="fname">${icon(FICON(f.family))}${famLabel(f)}</span>
+      <div class="frow"><span class="fname">${icon(r.ic)}${t("sub_" + r.key)}</span>
       <span class="tag2 ${pd ? "pd" : "hc"}">${icon(pd ? "i-up" : "i-down")}${t(pd ? "tagPd" : "tagHc")}</span></div>
       <div class="bar"><i class="${pd ? "pd" : "hc"}" data-w="${w}"></i></div></div>`;
   }).join("");

@@ -188,6 +188,7 @@ def _build_result(vecs, voiced_total, n_recordings) -> dict:
         "n_recordings": int(n_recordings),
         "narrative": make_narrative(proba, band, exp["top"], confidence),
         "top_factors": exp["top"],
+        "all_factors": exp["all"],          # every biomarker family, for the clinical-subsystem view
         "acoustic_report": report,
         "model": {
             "features": bundle["metadata"]["features"],
