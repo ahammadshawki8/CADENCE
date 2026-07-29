@@ -1,22 +1,113 @@
 {
-  "en": {"name": "English", "dir": "ltr", "rate": 2.4,
-    "text": "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveler take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveler fold his cloak around him; and at last the North Wind gave up the attempt."},
-  "es": {"name": "Espanol", "dir": "ltr", "rate": 2.6,
-    "text": "El viento del norte y el sol porfiaban sobre cual de ellos era el mas fuerte, cuando acerto a pasar un viajero envuelto en una amplia capa. Convinieron en que quien antes lograra obligar al viajero a quitarse la capa seria considerado el mas fuerte. El viento del norte soplo con todas sus fuerzas, pero cuanto mas soplaba, mas se arrebujaba el viajero en su capa."},
-  "it": {"name": "Italiano", "dir": "ltr", "rate": 2.6,
-    "text": "Si bisticciavano un giorno il vento di tramontana e il sole, l'uno pretendendo d'essere piu forte dell'altro, quando videro un viaggiatore che veniva innanzi avvolto nel mantello. I due litiganti convennero allora che si sarebbe ritenuto piu forte chi fosse riuscito per primo a far togliere il mantello al viaggiatore."},
-  "fr": {"name": "Francais", "dir": "ltr", "rate": 2.6,
-    "text": "La bise et le soleil se disputaient, chacun assurant qu'il etait le plus fort, quand ils virent un voyageur qui s'avancait, enveloppe dans son manteau. Ils convinrent que celui qui arriverait le premier a faire oter son manteau au voyageur serait regarde comme le plus fort."},
-  "de": {"name": "Deutsch", "dir": "ltr", "rate": 2.4,
-    "text": "Einst stritten sich Nordwind und Sonne, wer von ihnen beiden wohl der Starkere ware, als ein Wanderer, der in einen warmen Mantel gehullt war, des Weges daherkam. Sie wurden einig, dass derjenige fur den Starkeren gelten sollte, der den Wanderer zwingen wurde, seinen Mantel abzunehmen."},
-  "pt": {"name": "Portugues", "dir": "ltr", "rate": 2.6,
-    "text": "O vento norte e o Sol discutiam qual dos dois seria o mais forte, quando surgiu um viajante envolto numa capa. Chegaram a acordo que aquele que primeiro conseguisse obrigar o viajante a tirar a capa seria considerado o mais forte dos dois."},
-  "hi": {"name": "हिन्दी", "dir": "ltr", "rate": 2.2,
-    "text": "उत्तरी हवा और सूरज इस बात पर बहस कर रहे थे कि उन दोनों में से कौन अधिक शक्तिशाली है, तभी एक यात्री गर्म लबादा ओढ़े हुए वहाँ से गुज़रा। वे इस बात पर सहमत हुए कि जो पहले यात्री का लबादा उतरवा देगा, वही अधिक बलवान माना जाएगा।"},
-  "bn": {"name": "বাংলা", "dir": "ltr", "rate": 2.2,
-    "text": "উত্তরের বাতাস আর সূর্য তর্ক করছিল, তাদের মধ্যে কে বেশি শক্তিশালী, ঠিক তখনই একজন পথিক গরম চাদর জড়িয়ে সেখান দিয়ে যাচ্ছিল। তারা রাজি হলো যে, যে আগে পথিকের চাদর খুলিয়ে ফেলতে পারবে, তাকেই বেশি শক্তিশালী বলে ধরা হবে।"},
-  "ar": {"name": "العربية", "dir": "rtl", "rate": 2.4,
-    "text": "كانت ريح الشمال والشمس تتجادلان أيهما أقوى، عندما مرّ مسافر يلتف بعباءة دافئة. فاتفقتا على أن من ينجح أولاً في جعل المسافر يخلع عباءته يُعدّ الأقوى من الآخر."},
-  "zh": {"name": "中文", "dir": "ltr", "rate": 4.5, "charSplit": true,
-    "text": "北风和太阳正在争论谁更强大，这时一位裹着暖和斗篷的旅行者走了过来。他们商定，谁能先让旅行者脱下斗篷，谁就算更强大。"}
+  "en": {
+    "name": "English",
+    "dir": "ltr",
+    "rate": 2.4,
+    "text": "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveler take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveler fold his cloak around him; and at last the North Wind gave up the attempt.",
+    "texts": [
+      "The North Wind and the Sun were disputing which was the stronger, when a traveler came along wrapped in a warm cloak. They agreed that the one who first succeeded in making the traveler take his cloak off should be considered stronger than the other. Then the North Wind blew as hard as he could, but the more he blew the more closely did the traveler fold his cloak around him; and at last the North Wind gave up the attempt.",
+      "When sunlight strikes the raindrops in the air, they act like a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors. These take the shape of a long, round arch high above, with its two ends far beyond the horizon.",
+      "Every morning I make a cup of tea and sit quietly by the window. I watch the birds gather on the old wooden fence while the city slowly wakes up. It is a small, calm moment, but it is my favorite part of the whole day."
+    ]
+  },
+  "es": {
+    "name": "Espanol",
+    "dir": "ltr",
+    "rate": 2.6,
+    "text": "El viento del norte y el sol porfiaban sobre cual de ellos era el mas fuerte, cuando acerto a pasar un viajero envuelto en una amplia capa. Convinieron en que quien antes lograra obligar al viajero a quitarse la capa seria considerado el mas fuerte. El viento del norte soplo con todas sus fuerzas, pero cuanto mas soplaba, mas se arrebujaba el viajero en su capa.",
+    "texts": [
+      "El viento del norte y el sol porfiaban sobre cual de ellos era el mas fuerte, cuando acerto a pasar un viajero envuelto en una amplia capa. Convinieron en que quien antes lograra obligar al viajero a quitarse la capa seria considerado el mas fuerte. El viento del norte soplo con todas sus fuerzas, pero cuanto mas soplaba, mas se arrebujaba el viajero en su capa.",
+      "Cuando la luz del sol atraviesa las gotas de lluvia en el aire, actuan como un prisma y forman un arcoiris. El arcoiris es la division de la luz blanca en muchos colores hermosos, que forman un largo arco redondo en lo alto, con sus dos extremos mas alla del horizonte.",
+      "Cada manana preparo una taza de te y me siento tranquilamente junto a la ventana. Observo a los pajaros reunirse en la vieja cerca de madera mientras la ciudad despierta poco a poco. Es un momento pequeno y tranquilo, pero es mi parte favorita de todo el dia."
+    ]
+  },
+  "it": {
+    "name": "Italiano",
+    "dir": "ltr",
+    "rate": 2.6,
+    "text": "Si bisticciavano un giorno il vento di tramontana e il sole, l'uno pretendendo d'essere piu forte dell'altro, quando videro un viaggiatore che veniva innanzi avvolto nel mantello. I due litiganti convennero allora che si sarebbe ritenuto piu forte chi fosse riuscito per primo a far togliere il mantello al viaggiatore.",
+    "texts": [
+      "Si bisticciavano un giorno il vento di tramontana e il sole, l'uno pretendendo d'essere piu forte dell'altro, quando videro un viaggiatore che veniva innanzi avvolto nel mantello. I due litiganti convennero allora che si sarebbe ritenuto piu forte chi fosse riuscito per primo a far togliere il mantello al viaggiatore.",
+      "Quando la luce del sole colpisce le gocce di pioggia nell'aria, si comportano come un prisma e formano un arcobaleno. L'arcobaleno e la divisione della luce bianca in molti bei colori, che formano un lungo arco rotondo in alto, con le due estremita oltre l'orizzonte.",
+      "Ogni mattina preparo una tazza di te e mi siedo tranquillo accanto alla finestra. Guardo gli uccelli radunarsi sul vecchio recinto di legno mentre la citta si sveglia lentamente. E un momento piccolo e calmo, ma e la mia parte preferita di tutta la giornata."
+    ]
+  },
+  "fr": {
+    "name": "Francais",
+    "dir": "ltr",
+    "rate": 2.6,
+    "text": "La bise et le soleil se disputaient, chacun assurant qu'il etait le plus fort, quand ils virent un voyageur qui s'avancait, enveloppe dans son manteau. Ils convinrent que celui qui arriverait le premier a faire oter son manteau au voyageur serait regarde comme le plus fort.",
+    "texts": [
+      "La bise et le soleil se disputaient, chacun assurant qu'il etait le plus fort, quand ils virent un voyageur qui s'avancait, enveloppe dans son manteau. Ils convinrent que celui qui arriverait le premier a faire oter son manteau au voyageur serait regarde comme le plus fort.",
+      "Lorsque la lumiere du soleil traverse les gouttes de pluie dans l'air, elles agissent comme un prisme et forment un arc-en-ciel. L'arc-en-ciel est la division de la lumiere blanche en de nombreuses belles couleurs, qui forment un long arc arrondi tout la-haut, avec ses deux extremites bien au-dela de l'horizon.",
+      "Chaque matin, je prepare une tasse de the et je m'assois tranquillement pres de la fenetre. Je regarde les oiseaux se rassembler sur la vieille cloture en bois pendant que la ville s'eveille lentement. C'est un petit moment paisible, mais c'est mon moment prefere de toute la journee."
+    ]
+  },
+  "de": {
+    "name": "Deutsch",
+    "dir": "ltr",
+    "rate": 2.4,
+    "text": "Einst stritten sich Nordwind und Sonne, wer von ihnen beiden wohl der Starkere ware, als ein Wanderer, der in einen warmen Mantel gehullt war, des Weges daherkam. Sie wurden einig, dass derjenige fur den Starkeren gelten sollte, der den Wanderer zwingen wurde, seinen Mantel abzunehmen.",
+    "texts": [
+      "Einst stritten sich Nordwind und Sonne, wer von ihnen beiden wohl der Starkere ware, als ein Wanderer, der in einen warmen Mantel gehullt war, des Weges daherkam. Sie wurden einig, dass derjenige fur den Starkeren gelten sollte, der den Wanderer zwingen wurde, seinen Mantel abzunehmen.",
+      "Wenn das Sonnenlicht auf die Regentropfen in der Luft trifft, wirken sie wie ein Prisma und bilden einen Regenbogen. Der Regenbogen ist die Aufteilung des weissen Lichts in viele schone Farben, die hoch oben einen langen, runden Bogen bilden, dessen beide Enden weit hinter dem Horizont liegen.",
+      "Jeden Morgen mache ich mir eine Tasse Tee und setze mich ruhig ans Fenster. Ich beobachte, wie sich die Vogel auf dem alten Holzzaun versammeln, wahrend die Stadt langsam erwacht. Es ist ein kleiner, ruhiger Moment, aber es ist mein liebster Teil des ganzen Tages."
+    ]
+  },
+  "pt": {
+    "name": "Portugues",
+    "dir": "ltr",
+    "rate": 2.6,
+    "text": "O vento norte e o Sol discutiam qual dos dois seria o mais forte, quando surgiu um viajante envolto numa capa. Chegaram a acordo que aquele que primeiro conseguisse obrigar o viajante a tirar a capa seria considerado o mais forte dos dois.",
+    "texts": [
+      "O vento norte e o Sol discutiam qual dos dois seria o mais forte, quando surgiu um viajante envolto numa capa. Chegaram a acordo que aquele que primeiro conseguisse obrigar o viajante a tirar a capa seria considerado o mais forte dos dois.",
+      "Quando a luz do sol atravessa as gotas de chuva no ar, elas agem como um prisma e formam um arco-iris. O arco-iris e a divisao da luz branca em muitas cores bonitas, que formam um longo arco redondo la no alto, com suas duas pontas muito alem do horizonte.",
+      "Todas as manhas preparo uma xicara de cha e sento-me tranquilamente junto a janela. Observo os passaros reunirem-se na velha cerca de madeira enquanto a cidade acorda devagar. E um momento pequeno e calmo, mas e a minha parte favorita de todo o dia."
+    ]
+  },
+  "hi": {
+    "name": "हिन्दी",
+    "dir": "ltr",
+    "rate": 2.2,
+    "text": "उत्तरी हवा और सूरज इस बात पर बहस कर रहे थे कि उन दोनों में से कौन अधिक शक्तिशाली है, तभी एक यात्री गर्म लबादा ओढ़े हुए वहाँ से गुज़रा। वे इस बात पर सहमत हुए कि जो पहले यात्री का लबादा उतरवा देगा, वही अधिक बलवान माना जाएगा।",
+    "texts": [
+      "उत्तरी हवा और सूरज इस बात पर बहस कर रहे थे कि उन दोनों में से कौन अधिक शक्तिशाली है, तभी एक यात्री गर्म लबादा ओढ़े हुए वहाँ से गुज़रा। वे इस बात पर सहमत हुए कि जो पहले यात्री का लबादा उतरवा देगा, वही अधिक बलवान माना जाएगा।",
+      "जब सूरज की रोशनी हवा में बारिश की बूंदों पर पड़ती है, तो वे एक प्रिज़्म की तरह काम करती हैं और एक इंद्रधनुष बनाती हैं। इंद्रधनुष सफेद रोशनी का कई सुंदर रंगों में विभाजन है, जो आकाश में ऊँचे एक लंबा गोल चाप बनाते हैं।",
+      "हर सुबह मैं एक कप चाय बनाता हूँ और खिड़की के पास चुपचाप बैठ जाता हूँ। जब शहर धीरे-धीरे जागता है तब मैं पक्षियों को पुरानी लकड़ी की बाड़ पर इकट्ठा होते देखता हूँ। यह एक छोटा शांत पल है, पर यह मेरे पूरे दिन का सबसे पसंदीदा हिस्सा है।"
+    ]
+  },
+  "bn": {
+    "name": "বাংলা",
+    "dir": "ltr",
+    "rate": 2.2,
+    "text": "উত্তরের বাতাস আর সূর্য তর্ক করছিল, তাদের মধ্যে কে বেশি শক্তিশালী, ঠিক তখনই একজন পথিক গরম চাদর জড়িয়ে সেখান দিয়ে যাচ্ছিল। তারা রাজি হলো যে, যে আগে পথিকের চাদর খুলিয়ে ফেলতে পারবে, তাকেই বেশি শক্তিশালী বলে ধরা হবে।",
+    "texts": [
+      "উত্তরের বাতাস আর সূর্য তর্ক করছিল, তাদের মধ্যে কে বেশি শক্তিশালী, ঠিক তখনই একজন পথিক গরম চাদর জড়িয়ে সেখান দিয়ে যাচ্ছিল। তারা রাজি হলো যে, যে আগে পথিকের চাদর খুলিয়ে ফেলতে পারবে, তাকেই বেশি শক্তিশালী বলে ধরা হবে।",
+      "যখন সূর্যের আলো বাতাসে বৃষ্টির ফোঁটার উপর পড়ে, তখন সেগুলো প্রিজমের মতো কাজ করে এবং একটি রংধনু তৈরি করে। রংধনু হলো সাদা আলোর অনেক সুন্দর রঙে বিভক্ত হওয়া, যা আকাশে উঁচুতে একটি লম্বা গোল খিলান তৈরি করে।",
+      "প্রতিদিন সকালে আমি এক কাপ চা বানাই এবং জানালার পাশে চুপচাপ বসি। শহর যখন ধীরে ধীরে জেগে ওঠে তখন আমি পাখিদের পুরনো কাঠের বেড়ায় জড়ো হতে দেখি। এটি একটি ছোট শান্ত মুহূর্ত, কিন্তু এটি আমার সারা দিনের প্রিয় অংশ।"
+    ]
+  },
+  "ar": {
+    "name": "العربية",
+    "dir": "rtl",
+    "rate": 2.4,
+    "text": "كانت ريح الشمال والشمس تتجادلان أيهما أقوى، عندما مرّ مسافر يلتف بعباءة دافئة. فاتفقتا على أن من ينجح أولاً في جعل المسافر يخلع عباءته يُعدّ الأقوى من الآخر.",
+    "texts": [
+      "كانت ريح الشمال والشمس تتجادلان أيهما أقوى، عندما مرّ مسافر يلتف بعباءة دافئة. فاتفقتا على أن من ينجح أولاً في جعل المسافر يخلع عباءته يُعدّ الأقوى من الآخر.",
+      "عندما يسقط ضوء الشمس على قطرات المطر في الهواء، تعمل كالموشور وتكوّن قوس قزح. قوس قزح هو انقسام الضوء الأبيض إلى ألوان جميلة كثيرة، تشكل قوسًا طويلًا مستديرًا عاليًا في السماء، وطرفاه بعيدان خلف الأفق.",
+      "كل صباح أعد كوبًا من الشاي وأجلس بهدوء بجانب النافذة. أراقب الطيور تتجمع على السياج الخشبي القديم بينما تستيقظ المدينة ببطء. إنها لحظة صغيرة هادئة، لكنها جزئي المفضل في اليوم كله."
+    ]
+  },
+  "zh": {
+    "name": "中文",
+    "dir": "ltr",
+    "rate": 4.5,
+    "charSplit": true,
+    "text": "北风和太阳正在争论谁更强大，这时一位裹着暖和斗篷的旅行者走了过来。他们商定，谁能先让旅行者脱下斗篷，谁就算更强大。",
+    "texts": [
+      "北风和太阳正在争论谁更强大，这时一位裹着暖和斗篷的旅行者走了过来。他们商定，谁能先让旅行者脱下斗篷，谁就算更强大。",
+      "当阳光照射到空气中的雨滴时，它们就像棱镜一样，形成一道彩虹。彩虹是白光分成许多美丽的颜色，在高高的空中形成一道长长的圆弧，两端远在地平线之外。",
+      "每天早晨，我泡一杯茶，静静地坐在窗边。当城市慢慢苏醒时，我看着鸟儿聚集在旧木栅栏上。这是一个小小的宁静时刻，却是我一整天最喜欢的部分。"
+    ]
+  }
 }

@@ -107,6 +107,7 @@
   <!-- 3 · RECORD -->
   <section class="screen" id="record">
     <h2 class="title" data-i18n="readTitle">Read this out loud</h2>
+    <p class="rec-instructions" data-i18n="recInstr">Tap the mic, read the passage aloud, then tap again to stop. A new passage appears each time - record about 3 for a reliable result. You can also upload audio files.</p>
     <div class="bubble pop"><p id="prompt" class="passage"></p></div>
     <div class="recwrap">
       <div class="rings" id="rings"><span></span><span></span><span></span></div>
@@ -115,7 +116,10 @@
       <div class="timer" id="timer">tap the mic to start</div>
     </div>
     <audio id="playback" controls class="playback hidden"></audio>
-    <div class="mini" id="takeStatus" hidden style="margin:.3rem 0 .5rem;font-weight:600"></div>
+    <div class="takeprog" id="takeProgress">
+      <div class="takedots" id="takeDots"></div>
+      <div class="takelabel" id="takeStatus"></div>
+    </div>
     <button class="cta" id="analyzeBtn" data-go="analyzing" disabled><span data-i18n="analyse">Analyse my voice</span> <svg class="ic"><use href="#i-next"/></svg></button>
     <div class="altrow" style="display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
       <label class="linklike" id="uploadLbl" for="fileInput" data-i18n="upload" style="cursor:pointer">or upload an audio file (.wav)</label>

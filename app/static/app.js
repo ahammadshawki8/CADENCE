@@ -64,6 +64,7 @@ function applyLang() {
   MSGS = [t("am1"), t("am2"), t("am3"), t("am4"), t("am5")];
   if (!recwrap.classList.contains("recording")) $("#timer").textContent = t("tap");
   if (lastResult && current === "results") renderResults(lastResult, lastResult._isExample);
+  updateTakes();
 }
 
 (async function initLang() {
@@ -77,10 +78,18 @@ function applyLang() {
   renderPassage(); applyLang();
 })();
 
-function renderPassage() {
-  const p = PASSAGES[currentLang];
-  const prompt = $("#prompt"); prompt.dir = p.dir || "ltr"; prompt.textContent = p.text;
+let passageIdx = 0;
+function _passageList() {
+  const p = PASSAGES[currentLang] || {};
+  return (p.texts && p.texts.length) ? p.texts : [p.text || ""];
 }
+function renderPassage() {
+  const p = PASSAGES[currentLang] || {};
+  const list = _passageList();
+  const prompt = $("#prompt"); prompt.dir = p.dir || "ltr";
+  prompt.textContent = list[passageIdx % list.length];
+}
+function nextPassage() { passageIdx = (passageIdx + 1) % _passageList().length; renderPassage(); }
 
 micBtn.addEventListener("click", async () => {
   if (recwrap.classList.contains("recording")) return stopRec();
@@ -133,15 +142,18 @@ function addTake(blob, name) {
   if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} }
   pb.src = URL.createObjectURL(blob); pb.classList.remove("hidden");
   $("#analyzeBtn").disabled = false;
+  nextPassage();          // show a fresh passage for the next take
   updateTakes();
 }
 function updateTakes() {
-  const n = takes.length, el = $("#takeStatus");
-  if (el) { el.hidden = n === 0; el.textContent = t("takes", { n }); }
+  const n = takes.length, target = Math.max(3, n);
+  const dots = $("#takeDots");
+  if (dots) dots.innerHTML = Array.from({ length: target }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+  const el = $("#takeStatus"); if (el) el.textContent = t("takes", { n });
 }
 function purgeRecording() {
   // Privacy + reset: drop all captured takes and revoke the preview blob URL.
-  takes = []; wavBlob = null;
+  takes = []; wavBlob = null; passageIdx = 0; renderPassage();
   const pb = $("#playback");
   if (pb.getAttribute("src")) { try { URL.revokeObjectURL(pb.src); } catch (e) {} pb.removeAttribute("src"); try { pb.load(); } catch (e) {} }
   pb.classList.add("hidden");
