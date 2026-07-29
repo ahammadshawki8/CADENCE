@@ -167,5 +167,4 @@ python src/train_baseline.py  # within-dataset + confound controls
 python src/run_xdb.py         # cross-database transfer
 python src/dann.py all        # pairwise + leave-one-corpus-out + vowel controls (all 3 corpora)
 python src/dann.py honest     # pushed method (entropy-reg DANN) + shuffled-source control
-python src/push.py            # full engineering sweep (CORAL, featsel, robust, ensemble, ...)
 ```

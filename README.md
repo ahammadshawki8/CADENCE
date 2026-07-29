@@ -75,7 +75,7 @@ biomarker families (pitch, jitter, shimmer, harmonics-to-noise, loudness, rhythm
 | `src/model.py`, `src/screen.py`, `src/explain.py`, `src/report_pdf.py` | Deployable model, inference API, SHAP explanations, PDF. |
 | `src/check_*.py` | Confound diagnostics. |
 | `app/` | FastAPI backend + animated PWA frontend. |
-| `PLAN.md`, `RESULTS.md` | Living plan / session memory and the results write-up. |
+| `CLAUDE.md`, `RESULTS.md` | Project source of truth and the results write-up. |
 
 ## Quickstart
 ```bash
@@ -97,4 +97,4 @@ python app/backend.py       # run the app -> http://127.0.0.1:7860
 
 ## Status
 Finalised, with three-corpus / three-language validation (Italian, English, Spanish). Roadmap:
-add PC-GITA as a 4th corpus; explore a task-matched reading protocol for NeuroVoz. See `PLAN.md`.
+add PC-GITA as a 4th corpus; explore a task-matched reading protocol for NeuroVoz. See `CLAUDE.md`.

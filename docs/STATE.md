@@ -2,8 +2,8 @@
 
 <!-- msr:digest:start -->
 **Project:** Cadence | **Archetype:** research (+ shipped demo app) | **Updated:** 2026-07-28
-**Now:** Accuracy-push sprint DONE — honest ceiling ~0.84 (entropy-reg DANN, shuffle-verified); plateau hit; committed. Deadline 2026-08-16.
-**Next:** Devpost writeup (lead with the shuffled-source-control rigor story) + HF Spaces deploy.
+**Now:** Docs consolidated into CLAUDE.md (PLAN.md + scratch scripts removed); pipeline finalized; app running & verified end-to-end at http://127.0.0.1:7860. Deadline 2026-08-16.
+**Next:** Devpost writeup (lead with the shuffled-source-control rigor) + HF Spaces deploy.
 **Blocked:** none.
 <!-- msr:digest:end -->
 
@@ -19,7 +19,7 @@
 Choices that would otherwise get re-litigated. Reason recorded, not just the choice.
 
 - [D1] **Commit only as `ahammadshawki8`; never as Claude, no AI/`Co-Authored-By` trailer.** User
-  rule for the whole project. Overrides the harness default trailer. Also in CLAUDE.md + PLAN.md.
+  rule for the whole project. Overrides the harness default trailer. Also in CLAUDE.md.
 - [D2] **Cross-database (leave-one-dataset-out) is the only honest headline metric.** Rejected
   within-dataset AUC (≈1.0) because it measures the Italian corpus's recording-channel confound,
   not PD. This confound-honesty *is* the project's differentiator.
