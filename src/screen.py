@@ -151,32 +151,22 @@ def screen(wav, sr: int | None = None) -> dict:
 
     names = bundle["feature_names"]
     pipe = bundle["pipeline"]
-    sc, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
     vecs = [egemaps_signal(w, SAMPLE_RATE)[0] for w in _windows(y_trim)]
     vecs = np.vstack(vecs)
-    med = np.median(vecs, axis=0)   # RAW median (for the acoustic report card)
-
-    # Per-recording CHANNEL NORMALIZATION: standardize this recording's windows by their
-    # OWN mean/std before the classifier. This removes the additive/multiplicative channel
-    # offset that otherwise biases every score on an unseen microphone toward one class
-    # (the acquisition confound in deployment) - the same per-domain-standardization
-    # principle used in cross-database evaluation, applied per recording. Needs enough
-    # windows to estimate the stats; otherwise fall back to the training scaler.
-    if vecs.shape[0] >= 4:
-        rmu, rsd = vecs.mean(axis=0), vecs.std(axis=0) + 1e-6
-        vz = (vecs - rmu) / rsd
-        med_z = ((med - rmu) / rsd)
-        win_probas = lr.predict_proba(vz)[:, 1]
-        proba = float(lr.predict_proba(med_z.reshape(1, -1))[0, 1])
-        exp = explain_vector(med_z, bundle, top_k=6, prescaled=True)
-    else:
-        win_probas = pipe.predict_proba(vecs)[:, 1]
-        proba = float(pipe.predict_proba(med.reshape(1, -1))[0, 1])
-        exp = explain_vector(med, bundle, top_k=6)
+    med = np.median(vecs, axis=0)
+    # Score with the trained scaler+classifier. (We tried per-recording channel
+    # normalization to counter the deployment confound, but on held-out channels it
+    # merely compressed every score toward ~0.5 - healthy voices then read ~50% with
+    # almost no HC/PD separation - while the trained scaler keeps healthy speech low
+    # with a wider gap at the same AUC. So we keep the trained scaler and are honest,
+    # via the UI, that a single-device score is an uncalibrated indicator.)
+    win_probas = pipe.predict_proba(vecs)[:, 1]
+    proba = float(pipe.predict_proba(med.reshape(1, -1))[0, 1])
     confidence = round(float(max(0.0, 1.0 - 2.0 * np.std(win_probas))), 2)
 
     threshold = bundle["threshold"]
     band = _risk_band(proba, threshold)
+    exp = explain_vector(med, bundle, top_k=6)
 
     name_val = dict(zip(names, med))
     report = [{"label": lbl, "key": k, "value": round(float(name_val[k]), 4)}

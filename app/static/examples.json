@@ -3,49 +3,49 @@
     {
       "title": "Example A",
       "result": {
-        "probability_pd": 0.6644,
+        "probability_pd": 0.6498,
         "threshold": 0.5318,
         "flagged": true,
         "risk_band": "moderate",
-        "confidence": 0.42,
+        "confidence": 0.54,
         "voiced_sec": 29.5,
         "n_windows": 16,
-        "narrative": "Your recording produced a screening indicator of 66%, which sits in the middle range and is not conclusive on its own. A few patterns, such as your articulation and your pitch variation, leaned toward the signals we watch for, while your speaking rhythm looked more typical. Your voice varied across the recording, so treat this estimate with extra caution. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
+        "narrative": "Your recording produced a screening indicator of 65%, which sits in the middle range and is not conclusive on its own. A few patterns, such as your loudness and your voice tone, leaned toward the signals we watch for, while your articulation looked more typical. Your voice varied across the recording, so treat this estimate with extra caution. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
-          {
-            "family": "articulation",
-            "label": "Articulation - vocal-tract shaping",
-            "shap": 0.6030695724877911,
-            "direction": "toward Parkinson's"
-          },
-          {
-            "family": "pitch",
-            "label": "Pitch variation (monotone speech is a PD marker)",
-            "shap": 0.2969098140721048,
-            "direction": "toward Parkinson's"
-          },
-          {
-            "family": "rhythm",
-            "label": "Speech rhythm and rate (often reduced in PD)",
-            "shap": -0.09867033538913189,
-            "direction": "toward healthy"
-          },
           {
             "family": "loudness",
             "label": "Loudness dynamics",
-            "shap": 0.09168679174453001,
+            "shap": 0.7719177044498032,
             "direction": "toward Parkinson's"
           },
           {
             "family": "spectral",
             "label": "Voice tone - spectral balance",
-            "shap": 0.07862006713965572,
+            "shap": 0.7567203918106133,
             "direction": "toward Parkinson's"
           },
           {
-            "family": "other",
-            "label": "Other voice features",
-            "shap": 0.022379690167259256,
+            "family": "articulation",
+            "label": "Articulation - vocal-tract shaping",
+            "shap": -0.7274129568352619,
+            "direction": "toward healthy"
+          },
+          {
+            "family": "rhythm",
+            "label": "Speech rhythm and rate (often reduced in PD)",
+            "shap": -0.3593212043972459,
+            "direction": "toward healthy"
+          },
+          {
+            "family": "hnr",
+            "label": "Voice clarity - harmonics-to-noise (often reduced in PD)",
+            "shap": 0.2234652637140582,
+            "direction": "toward Parkinson's"
+          },
+          {
+            "family": "shimmer",
+            "label": "Shimmer - loudness stability (often raised in PD)",
+            "shap": 0.20630557850072845,
             "direction": "toward Parkinson's"
           }
         ],
@@ -95,50 +95,50 @@
     {
       "title": "Example B",
       "result": {
-        "probability_pd": 0.3947,
+        "probability_pd": 0.0754,
         "threshold": 0.5318,
         "flagged": false,
         "risk_band": "low",
-        "confidence": 0.38,
+        "confidence": 0.8,
         "voiced_sec": 45.9,
         "n_windows": 16,
-        "narrative": "Your recording produced a screening indicator of 39%, which sits in the lower range and is consistent with typical healthy speech. Measures such as your voice tone looked healthy, and although your pitch variation and your speaking rhythm drew a little attention, nothing stood out strongly. Your voice varied across the recording, so treat this estimate with extra caution. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
+        "narrative": "Your recording produced a screening indicator of 8%, which sits in the lower range and is consistent with typical healthy speech. Measures such as your speaking rhythm looked healthy, and although your pitch variation drew a little attention, nothing stood out strongly. This estimate was steady across your recording. Please remember this is a quick screening from a single recording and cannot diagnose any condition. If this result concerns you, a short conversation with a doctor is the best next step.",
         "top_factors": [
           {
-            "family": "spectral",
-            "label": "Voice tone - spectral balance",
-            "shap": -0.10836428234556768,
+            "family": "rhythm",
+            "label": "Speech rhythm and rate (often reduced in PD)",
+            "shap": -0.8180758883757481,
+            "direction": "toward healthy"
+          },
+          {
+            "family": "loudness",
+            "label": "Loudness dynamics",
+            "shap": -0.7264237369550812,
             "direction": "toward healthy"
           },
           {
             "family": "jitter",
             "label": "Jitter - pitch stability (often raised in PD)",
-            "shap": -0.09457492429983312,
-            "direction": "toward healthy"
-          },
-          {
-            "family": "shimmer",
-            "label": "Shimmer - loudness stability (often raised in PD)",
-            "shap": -0.07435118156685061,
+            "shap": -0.3235167909913488,
             "direction": "toward healthy"
           },
           {
             "family": "pitch",
             "label": "Pitch variation (monotone speech is a PD marker)",
-            "shap": 0.05825598165696593,
+            "shap": 0.31417866956733126,
             "direction": "toward Parkinson's"
           },
           {
-            "family": "rhythm",
-            "label": "Speech rhythm and rate (often reduced in PD)",
-            "shap": 0.04272954723822838,
-            "direction": "toward Parkinson's"
+            "family": "shimmer",
+            "label": "Shimmer - loudness stability (often raised in PD)",
+            "shap": -0.2485469804423186,
+            "direction": "toward healthy"
           },
           {
-            "family": "loudness",
-            "label": "Loudness dynamics",
-            "shap": 0.029142498224842252,
-            "direction": "toward Parkinson's"
+            "family": "articulation",
+            "label": "Articulation - vocal-tract shaping",
+            "shap": -0.1684715767505551,
+            "direction": "toward healthy"
           }
         ],
         "acoustic_report": [
