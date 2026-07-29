@@ -205,6 +205,7 @@ function renderResults(res, isExample) {
   lastResult = res; res._isExample = isExample;
   const pct = Math.round(res.probability_pd * 100), band = res.risk_band, sfx = BAND_SFX[band] || "Low";
   $("#resTitle").textContent = t(isExample ? "resTitleEx" : "resTitle");
+  $("#calNote").hidden = !!isExample;   // honesty note only for a live single-device recording
   const fill = $("#gFill"); fill.style.stroke = BAND_COLOR[band] || BAND_COLOR.low; fill.style.strokeDashoffset = 515;
   requestAnimationFrame(() => setTimeout(() => { fill.style.strokeDashoffset = 515 * (1 - pct / 100); }, 60));
   countUp($("#gPct"), pct);
@@ -228,7 +229,7 @@ function renderResults(res, isExample) {
   setTimeout(() => $$("#factors .bar i").forEach(i => i.style.width = i.dataset.w + "%"), 400);
   $("#report").innerHTML = res.acoustic_report.map(s => `<div class="stat"><div class="sv">${fmtVal(s.value)}</div><div class="sl">${t(REP_KEY[s.key] || s.key)}</div></div>`).join("");
   $("#resDisclaimer").textContent = t("disclaimer");
-  if (band === "low") confetti();
+  // No celebratory confetti: a low indicator from one uncalibrated recording is not a clean bill of health.
 }
 function fmtVal(v) { return Math.abs(v) >= 100 ? Math.round(v) : (Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3)); }
 function countUp(el, target) { let n = 0; const step = Math.max(1, Math.round(target / 28)); const id = setInterval(() => { n += step; if (n >= target) { n = target; clearInterval(id); } el.innerHTML = n + "<span>%</span>"; }, 40); }

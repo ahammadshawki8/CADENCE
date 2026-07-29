@@ -141,6 +141,7 @@
       <div class="gaugecenter"><div class="gpct" id="gPct">0<span>%</span></div><div class="glabel" data-i18n="indicator">screening indicator</div></div>
     </div>
     <div class="confchip" id="confChip" hidden></div>
+    <p class="muted" id="calNote" data-i18n="calNote" hidden style="font-size:.86rem;margin:.35rem auto .1rem;max-width:34rem;line-height:1.4"></p>
     <p class="verdict" id="verdict"></p>
     <div class="narrative" id="narrative"></div>
 
@@ -223,6 +224,36 @@
       within-corpus vowel "accuracy" is the microphone, not the disease. A screening from a single
       recording on a new device is an uncalibrated indicator, never a diagnosis - these are honest
       numbers across languages and microphones, not inflated single-dataset scores.</p>
+      <h4>Research that backs this project</h4>
+      <p class="muted">Parkinson's speech + cross-corpus generalization:</p>
+      <ul>
+        <li>Favaro et al., <i>Towards a Corpus (and Language)-Independent Screening of Parkinson's
+          Disease from Voice and Speech through Domain Adaptation</i>, Bioengineering 2023 -
+          <a href="https://www.mdpi.com/2306-5354/10/11/1316" target="_blank" rel="noopener">mdpi.com/2306-5354/10/11/1316</a>.
+          The domain-adversarial, corpus-independent screening approach we build on.</li>
+        <li>Favaro et al., <i>Analyzing wav2vec embeddings in Parkinson's disease speech: cross-database
+          classification and regression</i>, medRxiv 2024 -
+          <a href="https://www.medrxiv.org/content/10.1101/2024.04.10.24305599" target="_blank" rel="noopener">medrxiv.org/.../2024.04.10.24305599</a>.
+          Cross-database framing and the collapse of deep embeddings across corpora.</li>
+        <li><i>Towards a Generalizable Speech Marker for Parkinson's Disease</i>, arXiv:2501.03581 (2025) -
+          <a href="https://arxiv.org/abs/2501.03581" target="_blank" rel="noopener">arxiv.org/abs/2501.03581</a>.</li>
+        <li><i>Interpretable Early Detection of Parkinson's Disease through Speech</i>, arXiv:2504.17739 (2025) -
+          <a href="https://arxiv.org/abs/2504.17739" target="_blank" rel="noopener">arxiv.org/abs/2504.17739</a>.</li>
+        <li>Longitudinal voice-biomarker modelling on mPower with a domain-adaptive encoder
+          (CORAL + gradient reversal), Frontiers in Digital Health 2026 -
+          <a href="https://www.frontiersin.org/journals/digital-health/articles/10.3389/fdgth.2026.1864460/full" target="_blank" rel="noopener">frontiersin.org/.../fdgth.2026.1864460</a>.</li>
+      </ul>
+      <p class="muted">Methods we implemented:</p>
+      <ul>
+        <li>Eyben et al., <i>The Geneva Minimalistic Acoustic Parameter Set (eGeMAPS)</i>, IEEE T-AFFC 2016 -
+          <a href="https://doi.org/10.1109/TAFFC.2015.2457417" target="_blank" rel="noopener">doi.org/10.1109/TAFFC.2015.2457417</a>. Our acoustic features.</li>
+        <li>Ganin &amp; Lempitsky, <i>Domain-Adversarial Training of Neural Networks</i>, 2016 -
+          <a href="https://arxiv.org/abs/1505.07818" target="_blank" rel="noopener">arxiv.org/abs/1505.07818</a>. The gradient-reversal DANN.</li>
+        <li>Sun &amp; Saenko, <i>Deep CORAL: Correlation Alignment</i>, 2016 -
+          <a href="https://arxiv.org/abs/1607.01719" target="_blank" rel="noopener">arxiv.org/abs/1607.01719</a>. Covariance alignment.</li>
+        <li>Shu et al., <i>A DIRT-T Approach to Unsupervised Domain Adaptation</i> (VADA / target entropy
+          minimization), 2018 - <a href="https://arxiv.org/abs/1802.08735" target="_blank" rel="noopener">arxiv.org/abs/1802.08735</a>. The entropy-regularization that reached ~0.84.</li>
+      </ul>
     </div>
     <button class="cta" data-go="welcome"><svg class="ic"><use href="#i-back"/></svg> <span data-i18n="backhome">Back home</span></button>
   </section>
