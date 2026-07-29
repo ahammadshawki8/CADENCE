@@ -88,12 +88,16 @@ Verify with the smoke gate and, for frontend/serving changes, by loading the app
 - `xdb.py` + `run_*.py` cross-DB harness/runners · `train_baseline.py` within-DB + confound controls
 - `dann.py` domain-adversarial net + `evaluate_honest` (entropy-reg + shuffled-source control)
 - `model.py` shipped model (→ `artifacts/cadence_model.joblib`) · `explain.py` SHAP families ·
-  `screen.py` deployable wav→result API · `report_pdf.py` PDF · `check_*.py` confound diagnostics
+  `screen.py` deployable wav→result API (`screen`, `screen_many` = multi-passage pooling) ·
+  `ddk.py` diadochokinetic /pa-ta-ka/ (rate+regularity, model-free) · `vowel.py` sustained /a/
+  phonation markers (measurement only) · `report_pdf.py` PDF · `check_*.py` confound diagnostics
 
-**`app/` — web app**
-- `backend.py` FastAPI (`/`, `/api/screen`, `/api/examples`, `/api/report`, `/sw.js`, manifest)
-- `static/` `index.html`, `app.js`, `style.css`, `i18n.json`, `passages.json`, `sw.js` (bump CACHE
-  vNN on every frontend change), icons, `examples.json` · `gen_examples.py` precomputes examples
+**`app/` — web app** (linear multi-step test: read → pa-ta-ka → vowel → results, with local history)
+- `backend.py` FastAPI (`/`, `/api/screen` [1+ files, pooled], `/api/ddk`, `/api/vowel`,
+  `/api/examples`, `/api/report`, `/sw.js`, manifest)
+- `static/` `index.html` (welcome/consent/record/ddk/vowel/analyzing/results/history + info pages),
+  `app.js`, `style.css`, `i18n.json`, `passages.json` (3 passages/lang), `sw.js` (bump CACHE vNN on
+  every frontend change), icons, `examples.json` · `gen_examples.py` precomputes examples
 - `requirements.txt` torch-free serving set · root `Dockerfile` (HF Spaces, port 7860)
 
 **docs:** `README.md`, `RESULTS.md`, `LICENSE` (MIT), `docs/STATE.md` (msrOS digest).

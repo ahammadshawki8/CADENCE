@@ -2,8 +2,8 @@
 
 <!-- msr:digest:start -->
 **Project:** Cadence | **Archetype:** research (+ shipped demo app) | **Updated:** 2026-07-28
-**Now:** Docs consolidated into CLAUDE.md (PLAN.md + scratch scripts removed); pipeline finalized; app running & verified end-to-end at http://127.0.0.1:7860. Deadline 2026-08-16.
-**Next:** Devpost writeup (lead with the shuffled-source-control rigor) + HF Spaces deploy.
+**Now:** Clinical features shipped: linear multi-step test (read→pa-ta-ka→vowel→results), DDK + sustained-vowel tasks, clinical-subsystem report, multi-passage pooling, local longitudinal history. App verified end-to-end. Deadline 2026-08-16.
+**Next:** Translate the new UI strings (DDK/vowel/history are English-fallback); Devpost writeup + HF Spaces deploy.
 **Blocked:** none.
 <!-- msr:digest:end -->
 
