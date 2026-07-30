@@ -1,18 +1,27 @@
-# Cadence: the Parkinson's voice screen that refuses to lie to you
+# Cadence: hearing Parkinson's before anyone else can
 
-> Most published voice-based Parkinson's screeners claim 95 to 99 percent accuracy.
-> Cadence honestly reports about 84. That gap is not a weakness. It is the entire thesis,
-> and it is the reason Cadence is the only one of them worth trusting.
+> "You sound tired." It is often the first sign of Parkinson's, and the last one anyone thinks to
+> investigate. By the time the diagnosis comes, the disease has usually been changing the voice for
+> years.
 
-Parkinson's disease reaches the voice years before it reaches the hands. A micro-tremor in the
-vocal folds, a flattening of pitch, a breathy or unstable tone: these appear early, they are
-measurable, and a phone microphone can hear them. For roughly half the world, who have no timely
-access to a neurologist, a thirty second voice test could be the difference between catching the
-disease early and catching it late.
+Long before the tremor, before the stiffness, Parkinson's disease reaches the voice. It flattens the
+melody of a sentence. It drains the warmth from a familiar hello. A daughter notices her father
+sounds distant on the phone and cannot say why. A friend seems quieter, and greyer, months before
+anyone connects it to a disease. The voice is often the first thing Parkinson's takes, and it takes
+it so gently that no one listens.
 
-So why is nobody screening with those 99 percent models? Because almost all of them are measuring
-the wrong thing. Cadence is a research-backed web app that measures the right thing, proves it is
-measuring the right thing, and is honest about exactly how far that gets us.
+And for the roughly half of the world with no timely access to a neurologist, that early signal goes
+unheard entirely. A thirty second voice recording could change that. It could turn an ordinary phone
+into the first line of a screening that today requires a specialist most people will never reach, in
+time for the early treatment that actually changes how the disease unfolds.
+
+Cadence is built to hear it. But hearing it honestly turned out to be the hard part, and that is
+where this project becomes something more than another demo.
+
+Most published voice-based Parkinson's screeners claim 95 to 99 percent accuracy. Cadence honestly
+reports about 84, and that gap is the entire point: almost all of those high numbers are measuring
+the microphone, not the disease. Cadence is a research-backed web app that measures the right thing,
+proves it is measuring the right thing, and is honest about exactly how far that gets us.
 
 ## Inspiration
 
