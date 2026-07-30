@@ -1,0 +1,15 @@
+# Render blueprint for the Cadence backend API.
+# In Render: New + -> Blueprint, point at this repo. Or create a Web Service manually
+# with Root Directory = backend, and the build/start commands below.
+services:
+  - type: web
+    name: cadence-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"

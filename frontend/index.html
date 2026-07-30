@@ -390,6 +390,9 @@
   <div class="footnote" data-i18n="footNote">Cadence · voice-based Parkinson’s screening · built by ahammadshawki8 · not a medical device</div>
 </footer>
 
+<!-- Backend base URL. Leave "" for local dev (backend serves this page). For the split
+     deploy, set it to your Render backend, e.g. "https://cadence-api.onrender.com" -->
+<script>window.CADENCE_API = "";</script>
 <script src="/static/app.js"></script>
 <script>
   if ("serviceWorker" in navigator) {

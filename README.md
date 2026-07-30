@@ -50,7 +50,7 @@ cross-database evaluation. A **Domain-Adversarial Network** (`src/dann.py`) prov
 adaptation (the ~0.80 result). Predictions are explained with **SHAP**, grouped into clinical
 biomarker families (pitch, jitter, shimmer, harmonics-to-noise, loudness, rhythm, articulation).
 
-## The app (`app/`)
+## The app (`frontend/` PWA + `backend/` API)
 - **Robust capture:** reads a ~30 s passage; **quality-gated** (trims silence, rejects clipping,
   requires ≥8 s of real voiced speech) and scored over **16 overlapping windows** aggregated by
   median, with a **confidence** score — so one noisy second cannot create a false alarm.
@@ -74,18 +74,24 @@ biomarker families (pitch, jitter, shimmer, harmonics-to-noise, loudness, rhythm
 | `src/dann.py` | Domain-Adversarial Network (channel-invariant adaptation). |
 | `src/model.py`, `src/screen.py`, `src/explain.py`, `src/report_pdf.py` | Deployable model, inference API, SHAP explanations, PDF. |
 | `src/check_*.py` | Confound diagnostics. |
-| `app/` | FastAPI backend + animated PWA frontend. |
-| `CLAUDE.md`, `RESULTS.md` | Project source of truth and the results write-up. |
+| `frontend/` | Static installable PWA (deploy to Vercel). |
+| `backend/` | FastAPI screening API, self-contained + torch-free (deploy to Render). |
+| `CLAUDE.md`, `RESULTS.md`, `DEPLOY.md` | Source of truth, results write-up, deployment guide. |
 
 ## Quickstart
 ```bash
+# run the whole app locally from one process (backend also serves the frontend)
+pip install -r backend/requirements.txt
+python backend/app.py       # -> http://127.0.0.1:8000
+
+# research / reproduce the results (separate env)
 pip install -r requirements.txt
 python src/data.py          # download + index the Italian corpus
-python src/external.py      # MDVR-KCL (after unzipping into data/external/mdvr_kcl)
-python src/run_xdb.py       # cross-database transfer
-python src/dann.py          # domain-adversarial cross-database result (~0.80)
-python app/backend.py       # run the app -> http://127.0.0.1:7860
+python src/external.py      # MDVR-KCL + NeuroVoz (after unzipping into data/external/)
+python src/dann.py honest   # domain-adversarial result + shuffled-source control (~0.84)
 ```
+
+**Deploy:** `frontend/` → Vercel, `backend/` → Render. See [`DEPLOY.md`](DEPLOY.md).
 
 ## Data
 - **Italian Parkinson's Voice and Speech** (primary) — HuggingFace `birgermoell/Italian_Parkinsons_Voice_and_Speech`.

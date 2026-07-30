@@ -28,3 +28,9 @@ artifacts/*.pkl
 .ipynb_checkpoints/
 Thumbs.db
 /.playwright-mcp/
+
+# backend serving caches (keep the model joblib, ignore feature caches)
+backend/.cache/
+backend/data/
+backend/artifacts/*.npy
+backend/artifacts/*.npz

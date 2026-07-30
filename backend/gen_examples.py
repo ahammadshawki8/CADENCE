@@ -25,7 +25,7 @@ for label, title in [(1, "Example A"), (0, "Example B")]:
     res.pop("ok", None)
     examples.append({"title": title, "result": res})
 
-out = Path(__file__).resolve().parent / "static" / "examples.json"
+out = ROOT / "frontend" / "static" / "examples.json"
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps({"examples": examples}, indent=2), encoding="utf-8")
 print(f"wrote {out} with {len(examples)} examples")

@@ -1,6 +1,9 @@
 /* Cadence - flow, recording, results, PDF, info pages */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// Backend base URL. Empty = same origin (local dev, where the backend also serves the
+// frontend). For a split deploy set window.CADENCE_API in index.html to the Render URL.
+const API = ((window.CADENCE_API || "") + "").replace(/\/+$/, "");
 const ORDER = ["record", "ddk", "vowel", "results"];   // the 4-stage test progress dots
 let current = "welcome", lastResult = null;
 
@@ -237,7 +240,7 @@ function makeTaskRecorder(cfg) {
   };
 }
 const ddkRecorder = makeTaskRecorder({
-  btn: "#ddkBtn", status: "#ddkStatus", result: "#ddkResult", endpoint: "/api/ddk", meter: "#ddkMeter",
+  btn: "#ddkBtn", status: "#ddkStatus", result: "#ddkResult", endpoint: API + "/api/ddk", meter: "#ddkMeter",
   startKey: "ddkStart", recKey: "ddkStop", againKey: "ddkAgain",
   onResult(res) {
     ddkResult = res; const el = $("#ddkResult"); el.hidden = false;
@@ -245,7 +248,7 @@ const ddkRecorder = makeTaskRecorder({
   }
 });
 const vowelRecorder = makeTaskRecorder({
-  btn: "#vowelBtn", status: "#vowelStatus", result: "#vowelResult", endpoint: "/api/vowel", meter: "#vowelMeter",
+  btn: "#vowelBtn", status: "#vowelStatus", result: "#vowelResult", endpoint: API + "/api/vowel", meter: "#vowelMeter",
   startKey: "vowStart", recKey: "vowStop", againKey: "vowAgain",
   onResult(res) {
     vowelResult = res; const el = $("#vowelResult"); el.hidden = false;
@@ -263,7 +266,7 @@ async function analyze() {
   go("analyzing"); cycleMsgs();
   const fd = new FormData(); takes.forEach(tk => fd.append("audio", tk.blob, tk.name)); const t0 = Date.now();
   try {
-    const r = await fetch("/api/screen", { method: "POST", body: fd });
+    const r = await fetch(API + "/api/screen", { method: "POST", body: fd });
     const res = await r.json();
     if (!res.ok) throw new Error(res.error || res.detail || "analysis failed");
     res.ddk = ddkResult; res.vowel = vowelResult;   // attach optional task results to the report
@@ -277,7 +280,7 @@ const minWait = t0 => new Promise(r => setTimeout(r, Math.max(0, 1900 - (Date.no
 $("#exampleBtn").addEventListener("click", async () => {
   go("analyzing"); cycleMsgs(); const t0 = Date.now();
   try {
-    const j = await (await fetch("/api/examples")).json();
+    const j = await (await fetch("/static/examples.json")).json();
     const pick = j.examples[Math.floor(Math.random() * j.examples.length)];
     await minWait(t0); stopMsgs(); renderResults(pick.result, true); go("results");
   } catch (e) { stopMsgs(); toast(t("toastExampleFail") + " " + netMsg(e)); go("record"); }

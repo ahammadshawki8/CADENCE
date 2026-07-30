@@ -43,8 +43,9 @@ most voice-PD numbers, then engineering a model that partly survives it.
 
 | Purpose | Command |
 |---|---|
-| **run the app** | `python app/backend.py`  → http://127.0.0.1:7860 |
-| core smoke gate | `python -c "import sys; sys.path.insert(0,'src'); import config,egemaps,model,explain,screen"` |
+| **run the app (local, one process)** | `python backend/app.py`  → http://127.0.0.1:8000 (also serves `frontend/`) |
+| backend serving gate | `cd backend && python -c "import screen,ddk,vowel; from model import load_model; load_model()"` |
+| research smoke gate | `python -c "import sys; sys.path.insert(0,'src'); import config,egemaps,model,explain,screen"` |
 | train shipped model | `python src/model.py` (pooled Italian+MDVR eGeMAPS LogReg → `artifacts/cadence_model.joblib`) |
 | build corpora indices | `python src/external.py` (MDVR + NeuroVoz), `python src/data.py` (Italian) |
 | cross-DB experiments | `python src/dann.py all` (pairwise + leave-one-corpus-out + vowel controls) |
@@ -81,39 +82,48 @@ Verify with the smoke gate and, for frontend/serving changes, by loading the app
 
 ## File map
 
-**`src/` — data & modelling**
-- `config.py` paths/seed/model-ids · `data.py` Italian index · `external.py` MDVR + NeuroVoz indices
-- `egemaps.py` eGeMAPS (shipped features) · `features.py` 46 librosa biomarkers (confound expts) ·
-  `embeddings.py` wav2vec2/HuBERT (confound comparison only)
-- `xdb.py` + `run_*.py` cross-DB harness/runners · `train_baseline.py` within-DB + confound controls
-- `dann.py` domain-adversarial net + `evaluate_honest` (entropy-reg + shuffled-source control)
-- `model.py` shipped model (→ `artifacts/cadence_model.joblib`) · `explain.py` SHAP families ·
-  `screen.py` deployable wav→result API (`screen`, `screen_many` = multi-passage pooling) ·
-  `ddk.py` diadochokinetic /pa-ta-ka/ (rate+regularity, model-free) · `vowel.py` sustained /a/
-  phonation markers (measurement only) · `report_pdf.py` PDF · `check_*.py` confound diagnostics
+**Deployment split (see `DEPLOY.md`): `frontend/` → Vercel, `backend/` → Render.** The frontend
+finds the backend via `window.CADENCE_API` (set in `frontend/index.html`; empty = same origin
+for local dev, where `backend/app.py` also serves `frontend/`).
 
-**`app/` — web app** (linear multi-step test: read → pa-ta-ka → vowel → results, with local history)
-- `backend.py` FastAPI (`/`, `/api/screen` [1+ files, pooled], `/api/ddk`, `/api/vowel`,
-  `/api/examples`, `/api/report`, `/sw.js`, manifest)
-- `static/` `index.html` (welcome/consent/record/ddk/vowel/analyzing/results/history + info pages),
-  `app.js`, `style.css`, `i18n.json`, `passages.json` (3 passages/lang), `sw.js` (bump CACHE vNN on
-  every frontend change), icons, `examples.json` · `gen_examples.py` precomputes examples
-- `requirements.txt` torch-free serving set · root `Dockerfile` (HF Spaces, port 7860)
+**`frontend/` — static PWA (Vercel)** — linear multi-step test: read → pa-ta-ka → vowel → results
+- `index.html` (welcome/consent/record/ddk/vowel/analyzing/results + info pages) · `sw.js` (bump
+  CACHE vNN on every frontend change) · `manifest.webmanifest` · `vercel.json`
+- `static/`: `app.js` (uses `API` base for `/api/*`), `style.css`, `i18n.json` (10 langs),
+  `passages.json` (3 passages/lang), `examples.json` (static "see an example"), icons
+
+**`backend/` — FastAPI API (Render), self-contained + torch-free**
+- `app.py` (`/api/health`, `/api/screen` [1+ files, pooled], `/api/ddk`, `/api/vowel`; CORS `*`;
+  reads `$PORT`; also serves `../frontend` when present for local dev)
+- serving modules (production copies of the pipeline): `config.py`, `egemaps.py`, `model.py`,
+  `explain.py`, `screen.py` (`screen`/`screen_many`), `ddk.py`, `vowel.py`
+- `artifacts/cadence_model.joblib` (committed) · `requirements.txt` · `render.yaml` · `Dockerfile`
+- `gen_examples.py` (dev build → `frontend/static/examples.json`, uses `../src`)
+
+**`src/` — research / training (not needed to serve)**
+- `config.py` · `data.py` Italian index · `external.py` MDVR + NeuroVoz indices · `egemaps.py` ·
+  `features.py` · `embeddings.py` (wav2vec2/HuBERT, confound comparison) · `model.py` (trains
+  `artifacts/cadence_model.joblib`) · `explain.py` · `screen.py`
+- `xdb.py` + `run_*.py` cross-DB harness/runners · `train_baseline.py` · `dann.py` (domain-adversarial
+  net + `evaluate_honest`: entropy-reg + shuffled-source control) · `check_*.py` confound diagnostics
+- NOTE: `config/egemaps/model/explain/screen` also exist in `backend/` as the frozen production
+  copies; `ddk.py`/`vowel.py` live only in `backend/`. Keep the two in sync if the model changes.
 
 **docs:** `README.md`, `RESULTS.md`, `LICENSE` (MIT), `docs/STATE.md` (msrOS digest).
 
 ## Conventions (observed in the code — anchor for each)
 
-- **Module docstring first**, one line. `src/config.py:1`, `src/screen.py:1`, `app/backend.py:1`.
-- **`from __future__ import annotations`** at top. `src/screen.py:11`, `app/backend.py:7`.
-- **Flat imports:** `src/` on `sys.path`; import by **bare name** (`from config import ...`), not
-  `from src.config`. `app/backend.py:19-21`.
-- **Central config** in `src/config.py` (auto-`mkdir` paths, `SAMPLE_RATE=16_000`, `RANDOM_SEED=42`).
-- **UPPER_CASE** constants at top; **`_`-prefixed** private helpers/singletons. `src/screen.py:47-58`.
+- **Module docstring first**, one line. `src/config.py:1`, `backend/screen.py:1`, `backend/app.py:1`.
+- **`from __future__ import annotations`** at top. `backend/screen.py:11`, `backend/app.py:8`.
+- **Flat imports:** the module dir (`src/` for research, `backend/` for serving) is on `sys.path`;
+  import by **bare name** (`from config import ...`), not `from src.config`. `backend/app.py:20-24`.
+- **Central config** (auto-`mkdir` paths, `SAMPLE_RATE=16_000`, `RANDOM_SEED=42`) in each of
+  `src/config.py` (research) and `backend/config.py` (serving, paths inside `backend/`).
+- **UPPER_CASE** constants at top; **`_`-prefixed** private helpers/singletons. `backend/screen.py:47-58`.
 - **Torch-free serving:** `screen/model/explain` use only eGeMAPS + sklearn + SHAP; torch only in
-  `dann.py` / `embeddings.py`. `app/backend.py:2-6`.
+  research (`src/dann.py` / `src/embeddings.py`). `backend/app.py:1-6`.
 - **ASCII-only user-facing text** — no em-dashes / long dashes anywhere in the app or docs.
-- **Frontend is vanilla**; on **every** frontend change bump the SW cache version `app/static/sw.js:2`
+- **Frontend is vanilla**; on **every** frontend change bump the SW cache version `frontend/sw.js:2`
   (`cadence-vNN`) or users get a stale PWA cache (has bitten repeatedly).
 - **Large artifacts gitignored** (`data/`, `Neurovoz/`, `artifacts/*.npy|npz|pt|pkl`, audio, `*.zip`).
 
@@ -133,8 +143,9 @@ Verify with the smoke gate and, for frontend/serving changes, by loading the app
 
 ## Roadmap / what's next
 
+- Deploy: `frontend/` → Vercel, `backend/` → Render (see `DEPLOY.md`); set `window.CADENCE_API`
+  in `frontend/index.html` to the Render URL.
 - Devpost writeup (lead with the shuffled-source-control rigor + the vowel negative control).
-- HF Spaces deploy (needs the user's `huggingface-cli login`).
 - Optional: PC-GITA as a 4th corpus; a task-matched *reading* protocol for NeuroVoz.
 
 ## Working agreement
