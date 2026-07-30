@@ -3,7 +3,7 @@
 <!-- msr:digest:start -->
 **Project:** Cadence | **Archetype:** research (+ shipped demo app) | **Updated:** 2026-07-28
 **Now:** App split for deploy: frontend/ (Vercel, static PWA) + backend/ (Render, FastAPI API, CORS, self-contained). Frontend calls backend via window.CADENCE_API. Clinical multi-step app complete + fully translated (10 langs); Playwright-tested. See DEPLOY.md. Deadline 2026-08-16.
-**Next:** Deploy (frontend->Vercel, backend->Render; set window.CADENCE_API); native review of hi/bn/ar/zh strings; Devpost writeup.
+**Next:** Deploy (frontend->Vercel Root Dir frontend, backend->Render Web Service Docker, Root Dir backend; set window.CADENCE_API); record demo video; native review of hi/bn/ar/zh strings. DEVPOST.md written.
 **Blocked:** none.
 <!-- msr:digest:end -->
 

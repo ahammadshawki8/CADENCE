@@ -49,6 +49,19 @@ English, and Spanish via NeuroVoz). Three honest findings sharpen the story:
    re-discovering the Italian confound; only the clean-target direction survives the control. We
    caught our own method cheating. See `RESULTS.md` section 5 for the full sweep and the control.
 
+```mermaid
+flowchart TD
+    W["Within-corpus AUC about 1.0<br/>(the mirage: recording channel, not disease)"]
+    W --> X["Cross-database test<br/>train on corpus A, test on corpus B"]
+    X --> H["Deep embeddings (wav2vec2 / HuBERT)<br/>collapse to about 0.60"]
+    X --> E["Interpretable eGeMAPS biomarkers<br/>transfer at about 0.72"]
+    E --> D["+ Domain-Adversarial Network<br/>about 0.80"]
+    D --> R["+ target entropy regularization<br/>about 0.84"]
+    R --> S{"Shuffled-source control<br/>train with random labels"}
+    S -->|"clean target: collapses to 0.38"| OK["REAL cross-corpus transfer"]
+    S -->|"confounded target: stays 0.71"| BAD["rejected: the confound leaking back"]
+```
+
 ## Method
 
 Raw audio, resampled to 16 kHz, becomes **eGeMAPS** acoustic functionals (openSMILE), then a
@@ -57,6 +70,19 @@ cross-validation and **leave-one-dataset-out** cross-database evaluation. A **Do
 Network** (`src/dann.py`) provides channel-invariant adaptation (the ~0.80 result). Predictions are
 explained with **SHAP**, grouped into the clinical speech subsystems a clinician uses (phonation,
 prosody, articulation, rate).
+
+The domain-adversarial network makes the encoder blind to the recording channel: a gradient-reversal
+layer trains a domain classifier that the encoder learns to fool, while target entropy minimization
+sharpens the decision boundary on the unlabelled target corpus.
+
+```mermaid
+flowchart LR
+    F["eGeMAPS features (88)"] --> ENC["Shared feature encoder"]
+    ENC --> PD["PD head<br/>(trained on source labels)"]
+    ENC --> GRL["Gradient reversal layer"] --> DOM["Domain classifier<br/>source vs target channel"]
+    ENC --> ENT["Target entropy minimization<br/>(unlabelled target)"]
+    PD --> OUT["Channel-invariant PD score"]
+```
 
 ## The app
 
@@ -80,6 +106,44 @@ A simple, linear, multi-step test with one task per screen:
 - **Installable PWA**, mobile responsive, and **privacy-preserving**: audio is analysed on the spot
   and discarded, and **nothing is stored**, not even locally.
 - **Torch-free inference** (librosa, openSMILE, scikit-learn, SHAP).
+
+## Architecture and workflow
+
+The clinical test is a linear sequence. The two optional tasks are transparent, model-free
+measurements, while the reading task drives the trained screening model.
+
+```mermaid
+flowchart LR
+    A["Read a passage<br/>connected speech"] --> B["Say pa-ta-ka<br/>articulation rate and rhythm"]
+    B --> C["Hold a steady vowel<br/>voice clarity and stability"]
+    C --> D["Combined report<br/>screening indicator plus<br/>phonation, prosody, articulation, rate"]
+```
+
+The app is split into a static frontend and a stateless API, deployed independently. Audio is
+analysed in memory and never stored.
+
+```mermaid
+flowchart TD
+    subgraph Vercel["Vercel (static PWA)"]
+        FE["frontend/<br/>index.html, app.js, i18n in 10 languages"]
+    end
+    subgraph Render["Render (FastAPI, torch-free)"]
+        API["backend/app.py<br/>open CORS, temp files deleted after use"]
+        SCR["screen.py<br/>windowed eGeMAPS, median pooling"]
+        DDK["ddk.py<br/>envelope peak counting"]
+        VOW["vowel.py<br/>jitter, shimmer, HNR"]
+        MODEL[("cadence_model.joblib<br/>eGeMAPS + LogReg")]
+        EXP["explain.py<br/>SHAP grouped by subsystem"]
+    end
+    FE -->|"POST /api/screen (1 to N passages)"| API
+    FE -->|"POST /api/ddk"| API
+    FE -->|"POST /api/vowel"| API
+    API --> SCR --> MODEL
+    SCR --> EXP
+    API --> DDK
+    API --> VOW
+    API -->|"JSON result"| FE
+```
 
 ## Repository layout
 

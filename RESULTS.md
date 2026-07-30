@@ -1,9 +1,9 @@
-# Results — Why honest evaluation matters for voice-based PD screening
+# Results - Why honest evaluation matters for voice-based PD screening
 
 All numbers use **subject-independent** splits (no speaker appears in both train and test).
 
 ## 1. Within-dataset scores are a mirage
-On the Italian corpus, a classifier reaches near-perfect scores — but this **persists even after
+On the Italian corpus, a classifier reaches near-perfect scores - but this **persists even after
 controlling for sample rate and age**, for *both* deep embeddings and hand-crafted features:
 
 | Setting (Italian, reading task) | wav2vec2 AUC | acoustic AUC |
@@ -22,24 +22,24 @@ Train on Italian (reading), test on the independently-collected **MDVR-KCL** (En
 |---|---|---|
 | wav2vec2 (deep embeddings) | AUC 1.000 | AUC 0.604 · F1 0.222 · bal-acc 0.562 |
 | acoustic (46 biomarkers) | AUC 0.995 | AUC 0.696 · F1 0.643 · **bal-acc 0.710** |
-| acoustic — language-independent | AUC 1.000 | **AUC 0.720** · F1 0.560 · bal-acc 0.671 |
+| acoustic - language-independent | AUC 1.000 | **AUC 0.720** · F1 0.560 · bal-acc 0.671 |
 
 With unsupervised domain adaptation (per-dataset feature standardization):
 
 | Representation | Italian → MDVR-KCL |
 |---|---|
-| acoustic — language-independent | **AUC 0.723 · F1 0.667 · bal-acc 0.717** |
+| acoustic - language-independent | **AUC 0.723 · F1 0.667 · bal-acc 0.717** |
 | wav2vec2 | AUC 0.598 · bal-acc 0.600 (still near chance) |
 
 **Takeaways**
 - Deep embeddings **collapse** across datasets → they memorized the training corpus's channel.
 - Interpretable phonatory/prosodic biomarkers **transfer** (~0.72 AUC cross-lingual) → they capture
   genuine PD speech markers (reduced pitch variability, increased jitter/shimmer, altered rate).
-- ~0.72 cross-lingual AUC from a *single* reading task is honest and consistent with the literature —
+- ~0.72 cross-lingual AUC from a *single* reading task is honest and consistent with the literature  - 
   far more trustworthy than the inflated single-dataset "~99%" numbers common in this space.
 
 ## 3. Domain-adversarial adaptation beats the confound (headline method)
-We don't just *diagnose* the acquisition confound — we engineer a model invariant to it. Following
+We don't just *diagnose* the acquisition confound - we engineer a model invariant to it. Following
 the corpus/language-independent PD-screening literature (domain-adversarial training with a
 gradient-reversal layer, e.g. *Bioengineering* 2023, 10.3390/bioengineering10111316; the
 "Generalizable Speech Marker" work), we train a **Domain-Adversarial Neural Network (DANN)** in the
@@ -60,15 +60,15 @@ between the two recording channels. The PD head then transfers to the unseen cha
 | HuBERT embeddings | 0.43 | too channel-entangled; DANN can't fix on small data |
 | eGeMAPS + HuBERT fusion | 0.55 | HuBERT dilutes the transferable signal |
 
-**Why this matters:** deep speech embeddings (wav2vec2/HuBERT) — what most SOTA and commercial
-systems use (e.g. Canary Speech) — reach ~0.9 only under *pooled multi-corpus* validation; on a
+**Why this matters:** deep speech embeddings (wav2vec2/HuBERT) - what most SOTA and commercial
+systems use (e.g. Canary Speech) - reach ~0.9 only under *pooled multi-corpus* validation; on a
 strict *unseen-channel* test they collapse to ~0.6. Our interpretable-biomarker + domain-adversarial
 approach reaches **~0.80 on the strict test**, which is both honest and hard to beat without more
-clean corpora. No GPU or fine-tuning required — the DANN is tiny and CPU-trained.
+clean corpora. No GPU or fine-tuning required - the DANN is tiny and CPU-trained.
 
 ## 4. A third corpus, a third language: NeuroVoz (Spanish)
 We added **NeuroVoz** (Castilian Spanish, 108 subjects, 44.1 kHz) as a third, independently-collected
-corpus — so the honest test now spans **three languages** (Italian, English, Spanish). NeuroVoz has
+corpus - so the honest test now spans **three languages** (Italian, English, Spanish). NeuroVoz has
 **no reading passage**, so its connected-speech task is a **spontaneous monologue** (FREE); its
 comparison to Italian/MDVR *reading* therefore mixes a task shift with the channel shift, and it is
 also class-imbalanced (23 PD vs 53 HC monologues). We report it honestly rather than omit it.
@@ -85,7 +85,7 @@ also class-imbalanced (23 PD vs 53 HC monologues). We report it honestly rather 
 | MDVR-KCL → NeuroVoz | 0.672 | 0.562 |
 
 DANN lifts every direction *out of* NeuroVoz; predicting *onto* the imbalanced Spanish monologue is
-the hardest cell (~0.56–0.60), consistent with the added task shift.
+the hardest cell (~0.56-0.60), consistent with the added task shift.
 
 **Leave-one-CORPUS-out (train on 2 corpora, adapt to the unseen 3rd):**
 
@@ -96,11 +96,11 @@ the hardest cell (~0.56–0.60), consistent with the added task shift.
 | NeuroVoz | 0.692 | 0.660 |
 
 A mature, honest finding: **once you pool two diverse corpora as the source, the pooling itself
-supplies domain robustness** (unseen-corpus AUC ~0.69–0.76), and adversarial adaptation adds nothing
+supplies domain robustness** (unseen-corpus AUC ~0.69-0.76), and adversarial adaptation adds nothing
 on top (here slightly negative). DANN's clear win is in the **single-source → single-target** regime
 (Section 3); it is not a silver bullet when diverse source data is already available.
 
-**Negative control — the classic biomarker fails to transfer.** Sustained vowel **/a/** is the most
+**Negative control - the classic biomarker fails to transfer.** Sustained vowel **/a/** is the most
 widely used PD voice marker. Across Italian (VA) ↔ NeuroVoz (A):
 
 | Direction (sustained /a/) | Logistic baseline | DANN |
@@ -109,7 +109,7 @@ widely used PD voice marker. Across Italian (VA) ↔ NeuroVoz (A):
 | NeuroVoz → Italian | 0.431 | 0.339 |
 
 **At or below chance, and DANN cannot rescue it.** This is the sharpest confirmation of the whole
-thesis: within-corpus sustained-vowel "success" is the recording channel, not the disease — the
+thesis: within-corpus sustained-vowel "success" is the recording channel, not the disease - the
 discriminative direction even *flips* between corpora. Connected speech transfers (~0.80); the vowel
 does not. Papers reporting high within-corpus vowel accuracy are measuring the microphone.
 

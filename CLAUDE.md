@@ -6,7 +6,7 @@ screening only generalizes when evaluated across independently-collected corpora
 near-perfect accuracy is a recording-channel confound; a domain-adversarial network recovers a
 shuffle-verified ~0.84 honest cross-corpus AUC.**
 
-## ⚠️ REPO & COMMIT RULES (MANDATORY - every session)
+## REPO & COMMIT RULES (MANDATORY - every session)
 
 - **Repository:** private GitHub repo **`CADENCE`** under user **`ahammadshawki8`**.
 - **Author every commit as `ahammadshawki8`** (git identity `Ahammad Shawki
@@ -109,7 +109,9 @@ for local dev, where `backend/app.py` also serves `frontend/`).
 - NOTE: `config/egemaps/model/explain/screen` also exist in `backend/` as the frozen production
   copies; `ddk.py`/`vowel.py` live only in `backend/`. Keep the two in sync if the model changes.
 
-**docs:** `README.md`, `RESULTS.md`, `LICENSE` (MIT), `docs/STATE.md` (msrOS digest).
+**docs:** `README.md` (overview + mermaid diagrams), `RESULTS.md` (results + shuffle control),
+`DEPLOY.md` (Vercel + Render), `DEVPOST.md` (submission story), `LICENSE` (MIT),
+`docs/STATE.md` (msrOS digest). All prose docs are free of long dashes and emojis.
 
 ## Conventions (observed in the code - anchor for each)
 
