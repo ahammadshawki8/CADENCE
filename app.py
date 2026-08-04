@@ -24,48 +24,92 @@ from backend.ddk import analyze_ddk
 from backend.vowel import analyze_vowel
 
 
-def format_result(result):
-    """Format JSON result as readable markdown."""
-    if not result.get("ok"):
-        return f"❌ **Error:** {result.get('error', 'Unknown error')}"
-    
-    md = []
-    
-    # Risk assessment
-    risk_level = result.get("risk_level", "unknown")
-    prob = result.get("probability", 0)
-    emoji = "🟢" if risk_level == "low" else "🟡" if risk_level == "moderate" else "🔴"
-    md.append(f"## {emoji} Risk Level: {risk_level.title()}")
-    md.append(f"**Probability:** {prob:.1%}")
-    md.append("")
-    
-    # Feature importance
-    if "top_features" in result:
-        md.append("### 🔍 Top Contributing Features")
-        for feat in result["top_features"][:5]:
-            name = feat["feature"]
-            impact = feat["contribution"]
-            sign = "+" if impact > 0 else ""
-            md.append(f"- **{name}**: {sign}{impact:.3f}")
+BAND_EMOJI = {"low": "🟢", "moderate": "🟡", "elevated": "🔴"}
+
+
+def _tail(result):
+    """Disclaimer plus the collapsible raw payload, shared by all three tabs."""
+    md = [""]
+    if result.get("disclaimer"):
+        md.append(f"*{result['disclaimer']}*")
         md.append("")
-    
-    # DDK/Vowel specific metrics
-    if "syllable_rate" in result:
-        md.append(f"**Syllable Rate:** {result['syllable_rate']:.2f} syll/sec")
-    if "jitter" in result:
-        md.append(f"**Jitter:** {result['jitter']:.4f}")
-    if "shimmer" in result:
-        md.append(f"**Shimmer:** {result['shimmer']:.4f}")
-    if "hnr" in result:
-        md.append(f"**HNR:** {result['hnr']:.2f} dB")
-    
-    # Raw JSON (collapsible)
-    md.append("")
-    md.append("<details><summary>📋 Full JSON Response</summary>")
-    md.append(f"```json\n{json.dumps(result, indent=2)}\n```")
+    md.append("<details><summary>📋 Full JSON response</summary>")
+    md.append(f"\n```json\n{json.dumps(result, indent=2)}\n```\n")
     md.append("</details>")
-    
-    return "\n".join(md)
+    return md
+
+
+def format_screen(result):
+    """Render a screen()/screen_many() payload."""
+    if not result.get("ok"):
+        return f"❌ **{result.get('error', 'Unknown error')}**"
+
+    band = result.get("risk_band", "unknown")
+    md = [f"## {BAND_EMOJI.get(band, '⚪')} Screening indicator: {band.title()}"]
+
+    prob = result.get("probability_pd")
+    if prob is not None:
+        md.append(f"**Model probability:** {prob:.1%} "
+                  f"(flagging threshold {result.get('threshold', 0):.1%})")
+    md.append(f"**Stability across the recording:** {result.get('confidence', 0):.0%} "
+              f"({result.get('n_windows', 0)} windows, "
+              f"{result.get('voiced_sec', 0):.0f}s of voiced speech)")
+    md.append("")
+
+    if result.get("narrative"):
+        md.append("### What this means")
+        md.append(result["narrative"])
+        md.append("")
+
+    factors = result.get("top_factors") or []
+    if factors:
+        md.append("### 🔍 What drove this result")
+        for f in factors[:5]:
+            md.append(f"- **{f.get('label', f.get('family', 'factor'))}** "
+                      f"-> {f.get('direction', 'n/a')} (SHAP {f.get('shap', 0):+.2f})")
+        md.append("")
+
+    return "\n".join(md + _tail(result))
+
+
+def format_ddk(result):
+    """Render an analyze_ddk() payload."""
+    if not result.get("ok"):
+        return f"❌ **{result.get('error', 'Unknown error')}**"
+
+    lo, hi = result.get("rate_typical", [5.0, 7.0])
+    rate = result.get("syllable_rate", 0)
+    md = [f"## 🗣️ Repetition rate: {rate:.1f} syllables/sec",
+          f"**Typical range:** {lo:g} to {hi:g} /sec",
+          f"**Syllables detected:** {result.get('n_syllables', 0)} "
+          f"over {result.get('duration', 0):.1f}s",
+          f"**Rhythm regularity:** {result.get('regularity', 0):.0%} "
+          f"(interval CV {result.get('interval_cv', 0):.2f})",
+          ""]
+    if result.get("reading"):
+        md.append("### What this means")
+        md.append(result["reading"])
+        md.append("")
+    return "\n".join(md + _tail(result))
+
+
+def format_vowel(result):
+    """Render an analyze_vowel() payload."""
+    if not result.get("ok"):
+        return f"❌ **{result.get('error', 'Unknown error')}**"
+
+    md = ["## 🎵 Sustained vowel measurements",
+          f"**Duration:** {result.get('duration', 0):.1f}s",
+          f"**Jitter (pitch stability):** {result.get('jitter', 0):.4f}",
+          f"**Shimmer (loudness stability):** {result.get('shimmer', 0):.4f}",
+          f"**HNR (voice clarity):** {result.get('hnr', 0):.2f} dB",
+          f"**Pitch steadiness:** {result.get('pitch_stability', 0):.4f}",
+          ""]
+    if result.get("reading"):
+        md.append("### What this means")
+        md.append(result["reading"])
+        md.append("")
+    return "\n".join(md + _tail(result))
 
 
 def screen_interface(audio):
@@ -74,7 +118,7 @@ def screen_interface(audio):
         return "⚠️ Please upload an audio file."
     try:
         result = screen(audio)
-        return format_result(result)
+        return format_screen(result)
     except Exception as e:
         return f"❌ **Error:** {str(e)}"
 
@@ -85,7 +129,7 @@ def ddk_interface(audio):
         return "⚠️ Please upload an audio file."
     try:
         result = analyze_ddk(audio)
-        return format_result(result)
+        return format_ddk(result)
     except Exception as e:
         return f"❌ **Error:** {str(e)}"
 
@@ -96,7 +140,7 @@ def vowel_interface(audio):
         return "⚠️ Please upload an audio file."
     try:
         result = analyze_vowel(audio)
-        return format_result(result)
+        return format_vowel(result)
     except Exception as e:
         return f"❌ **Error:** {str(e)}"
 
