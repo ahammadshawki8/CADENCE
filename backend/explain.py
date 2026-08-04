@@ -86,23 +86,27 @@ def _explainer(bundle):
 
 def explain_vector(x_row, bundle=None, top_k: int = 6, prescaled: bool = False):
     """x_row: (88,) eGeMAPS vector aligned to bundle['feature_names'].
-
-    prescaled=True means x_row is ALREADY standardized (e.g. per-recording channel
-    normalization in screen.py); the training scaler is then skipped so the SHAP
-    attribution matches the probability computed on the same normalized vector."""
+    
+    LIGHTWEIGHT VERSION: Uses LR coefficients instead of SHAP for memory efficiency.
+    Saves ~80 MB of memory, critical for 512 MB free tier deployment.
+    
+    prescaled=True means x_row is ALREADY standardized."""
     bundle = bundle or load_model()
     names = bundle["feature_names"]
     x = np.asarray(x_row, dtype=float).reshape(1, -1)
 
-    explainer, scaler, lr = _explainer(bundle)
+    pipe = bundle["pipeline"]
+    scaler, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
     xs = x if prescaled else scaler.transform(x)
-    sv = np.asarray(explainer.shap_values(xs)).reshape(-1)
+    
+    # Use LR coefficients as feature importance (lightweight alternative to SHAP)
+    contrib = xs[0] * lr.coef_[0]
     proba = float(lr.predict_proba(xs)[0, 1])
 
     fam_sum: dict[str, float] = {}
-    for name, s in zip(names, sv):
+    for name, c in zip(names, contrib):
         k = family_of(name)
-        fam_sum[k] = fam_sum.get(k, 0.0) + float(s)
+        fam_sum[k] = fam_sum.get(k, 0.0) + float(c)
 
     contribs = [{"family": k, "label": FAMILY_LABEL.get(k, k), "shap": v,
                  "direction": "toward Parkinson's" if v > 0 else "toward healthy"}

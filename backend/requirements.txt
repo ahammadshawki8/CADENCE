@@ -7,7 +7,7 @@ librosa>=0.10
 soundfile
 opensmile>=2.5     # eGeMAPS features
 joblib>=1.3
-shap>=0.44
+# shap>=0.44       # REMOVED: Too memory-intensive for 512 MB free tier. Using coefficient-based explanations instead.
 fastapi>=0.110
 uvicorn[standard]>=0.29
 python-multipart>=0.0.9
