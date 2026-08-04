@@ -392,12 +392,24 @@
 
 <!-- Backend base URL. Leave "" for local dev (backend serves this page). For the split
      deploy, set it to your Render backend, e.g. "https://cadence-api.onrender.com" -->
-<script>window.CADENCE_API = "";</script>
+<script>window.CADENCE_API = "https://cadence-api-6nlv.onrender.com";</script>
 <script src="/static/app.js"></script>
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
   }
 </script>
+
+<!-- Wake-up toast notification -->
+<div id="wakeToast" class="toast">
+  <div class="toast-content">
+    <div id="wakeSpinner" class="toast-spinner"></div>
+    <div class="toast-text">
+      <div id="wakeTitle" class="toast-title">Waking up backend...</div>
+      <div id="wakeMsg" class="toast-msg">This website is hosted on free Render service. Please wait while we boot it up for the first time.</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

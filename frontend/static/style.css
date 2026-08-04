@@ -48,6 +48,28 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:60px;z-index:
 /* progress dots */
 .steps{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:9px;z-index:20}
 .steps span{width:9px;height:9px;border-radius:50%;background:var(--line);transition:.4s}
+
+/* toast notification for backend wake-up */
+.toast{position:fixed;bottom:20px;right:20px;z-index:100;
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:16px 20px;box-shadow:var(--shadow);max-width:320px;
+  transform:translateY(120%);opacity:0;transition:transform .4s, opacity .4s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-content{display:flex;gap:12px;align-items:flex-start}
+.toast-spinner{width:20px;height:20px;border:3px solid var(--brand-soft);
+  border-top-color:var(--brand);border-radius:50%;
+  animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast-text{flex:1}
+.toast-title{font-family:'Baloo 2';font-size:14px;font-weight:700;
+  color:var(--ink);margin-bottom:4px}
+.toast-msg{font-size:13px;color:var(--ink-soft);font-weight:500;line-height:1.4}
+.toast-close{position:absolute;top:8px;right:8px;width:24px;height:24px;
+  border:none;background:none;cursor:pointer;color:var(--ink-soft);
+  font-size:18px;line-height:1;padding:0;display:none}
+.toast-close:hover{color:var(--ink)}
+.toast.success .toast-spinner{border-top-color:var(--teal);border-color:var(--teal-soft)}
+.toast.success .toast-title{color:var(--teal)}
 .steps span.on{background:var(--brand);width:24px;border-radius:5px}
 .steps span.done{background:var(--brand-2)}
 .steps.hide{display:none}

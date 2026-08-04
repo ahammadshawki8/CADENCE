@@ -7,6 +7,88 @@ const API = ((window.CADENCE_API || "") + "").replace(/\/+$/, "");
 const ORDER = ["record", "ddk", "vowel", "results"];   // the 4-stage test progress dots
 let current = "welcome", lastResult = null;
 
+/* ---------- backend wake-up toast ---------- */
+let backendReady = false;
+async function wakeUpBackend() {
+  // Only show toast if API is external (not same origin)
+  if (!API || API === "") {
+    backendReady = true;
+    return;
+  }
+  
+  const toast = $("#wakeToast");
+  const title = $("#wakeTitle");
+  const msg = $("#wakeMsg");
+  const spinner = $("#wakeSpinner");
+  
+  toast.classList.add("show");
+  title.textContent = "Waking up backend...";
+  msg.textContent = "This website is hosted on free Render service. Please wait while we boot it up for the first time.";
+  
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  async function tryPing() {
+    attempts++;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      
+      const response = await fetch(`${API}/api/health`, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.ok) {
+          // Success!
+          backendReady = true;
+          toast.classList.add("success");
+          spinner.style.display = "none";
+          title.textContent = "Ready!";
+          msg.textContent = "Backend is online. You can now use the app.";
+          
+          setTimeout(() => {
+            toast.classList.remove("show");
+          }, 2000);
+          return true;
+        }
+      }
+    } catch (err) {
+      console.log(`Backend ping attempt ${attempts} failed:`, err.message);
+    }
+    
+    // If failed and haven't reached max attempts, try again
+    if (attempts < maxAttempts) {
+      msg.textContent = `Attempting to connect... (${attempts}/${maxAttempts})`;
+      setTimeout(tryPing, 3000);
+    } else {
+      // Max attempts reached
+      toast.classList.remove("success");
+      spinner.style.display = "none";
+      title.textContent = "Connection timeout";
+      msg.textContent = "Backend is taking longer than expected. Please refresh the page or try again later.";
+      
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 5000);
+    }
+    
+    return false;
+  }
+  
+  await tryPing();
+}
+
+// Start backend wake-up when page loads
+window.addEventListener("load", () => {
+  wakeUpBackend();
+});
+
+
 /* ---------- navigation ---------- */
 function go(id) {
   if (id === current) return;
