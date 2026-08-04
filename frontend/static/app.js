@@ -19,20 +19,21 @@ async function wakeUpBackend() {
   const toast = $("#wakeToast");
   const title = $("#wakeTitle");
   const msg = $("#wakeMsg");
-  const spinner = $("#wakeSpinner");
+  const progress = $("#wakeProgress");
+  const icon = $("#wakeIcon");
   
   toast.classList.add("show");
-  title.textContent = "Waking up backend...";
-  msg.textContent = "This website is hosted on free Render service. Please wait while we boot it up for the first time.";
+  title.textContent = "Waking up backend";
+  msg.textContent = "Hosted on free Render service. Booting up for the first time...";
   
   let attempts = 0;
-  const maxAttempts = 10;
+  const maxAttempts = 12;
   
   async function tryPing() {
     attempts++;
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       
       const response = await fetch(`${API}/api/health`, {
         method: 'GET',
@@ -47,13 +48,14 @@ async function wakeUpBackend() {
           // Success!
           backendReady = true;
           toast.classList.add("success");
-          spinner.style.display = "none";
-          title.textContent = "Ready!";
-          msg.textContent = "Backend is online. You can now use the app.";
+          icon.innerHTML = '<div class="toast-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>';
+          title.textContent = "Backend ready!";
+          msg.textContent = "All systems operational. You can now use the app.";
+          progress.textContent = "";
           
           setTimeout(() => {
             toast.classList.remove("show");
-          }, 2000);
+          }, 3000);
           return true;
         }
       }
@@ -63,18 +65,19 @@ async function wakeUpBackend() {
     
     // If failed and haven't reached max attempts, try again
     if (attempts < maxAttempts) {
-      msg.textContent = `Attempting to connect... (${attempts}/${maxAttempts})`;
+      progress.textContent = `Attempt ${attempts} of ${maxAttempts}...`;
       setTimeout(tryPing, 3000);
     } else {
       // Max attempts reached
-      toast.classList.remove("success");
-      spinner.style.display = "none";
+      toast.classList.add("error");
+      icon.innerHTML = '<div class="toast-spinner"></div>';
       title.textContent = "Connection timeout";
       msg.textContent = "Backend is taking longer than expected. Please refresh the page or try again later.";
+      progress.textContent = "";
       
       setTimeout(() => {
         toast.classList.remove("show");
-      }, 5000);
+      }, 6000);
     }
     
     return false;

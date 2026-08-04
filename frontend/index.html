@@ -403,10 +403,13 @@
 <!-- Wake-up toast notification -->
 <div id="wakeToast" class="toast">
   <div class="toast-content">
-    <div id="wakeSpinner" class="toast-spinner"></div>
+    <div class="toast-icon" id="wakeIcon">
+      <div class="toast-spinner"></div>
+    </div>
     <div class="toast-text">
-      <div id="wakeTitle" class="toast-title">Waking up backend...</div>
-      <div id="wakeMsg" class="toast-msg">This website is hosted on free Render service. Please wait while we boot it up for the first time.</div>
+      <div id="wakeTitle" class="toast-title">Waking up backend</div>
+      <div id="wakeMsg" class="toast-msg">Hosted on free Render service. Booting up for the first time...</div>
+      <div id="wakeProgress" class="toast-progress"></div>
     </div>
   </div>
 </div>
