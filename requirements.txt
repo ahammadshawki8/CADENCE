@@ -11,3 +11,4 @@ soundfile
 opensmile>=2.5
 joblib>=1.3
 shap>=0.44
+huggingface-hub>=0.20,<0.30  # Fix compatibility with Gradio
