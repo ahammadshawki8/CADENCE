@@ -52,6 +52,10 @@ _explainer_cache = None
 
 
 def _explainer(bundle):
+    """Create and cache SHAP LinearExplainer with full background dataset.
+    
+    With 16 GB RAM on Hugging Face, we can use the complete training background
+    for maximum explanation accuracy."""
     global _explainer_cache
     if _explainer_cache is not None:
         return _explainer_cache
@@ -60,25 +64,9 @@ def _explainer(bundle):
     pipe = bundle["pipeline"]
     scaler, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
     
-    # Reduce SHAP memory by 70%: use only 30 background samples instead of full dataset
-    # This is critical for Render free tier (512 MB limit)
-    bg_full = bundle["background"]
-    if len(bg_full) > 30:
-        # Stratified sampling: keep balanced PD/HC ratio
-        labels = bundle.get("background_labels", np.zeros(len(bg_full)))
-        pd_idx = np.where(labels == 1)[0]
-        hc_idx = np.where(labels == 0)[0]
-        n_pd = min(15, len(pd_idx))
-        n_hc = min(15, len(hc_idx))
-        selected = np.concatenate([
-            np.random.choice(pd_idx, n_pd, replace=False),
-            np.random.choice(hc_idx, n_hc, replace=False)
-        ])
-        bg_sample = bg_full[selected]
-    else:
-        bg_sample = bg_full
+    # Use full background dataset (works fine on Hugging Face 16 GB RAM)
+    bg = scaler.transform(bundle["background"])
     
-    bg = scaler.transform(bg_sample)
     result = (shap.LinearExplainer(lr, bg), scaler, lr)
     _explainer_cache = result
     return result
@@ -86,27 +74,23 @@ def _explainer(bundle):
 
 def explain_vector(x_row, bundle=None, top_k: int = 6, prescaled: bool = False):
     """x_row: (88,) eGeMAPS vector aligned to bundle['feature_names'].
-    
-    LIGHTWEIGHT VERSION: Uses LR coefficients instead of SHAP for memory efficiency.
-    Saves ~80 MB of memory, critical for 512 MB free tier deployment.
-    
-    prescaled=True means x_row is ALREADY standardized."""
+
+    prescaled=True means x_row is ALREADY standardized (e.g. per-recording channel
+    normalization in screen.py); the training scaler is then skipped so the SHAP
+    attribution matches the probability computed on the same normalized vector."""
     bundle = bundle or load_model()
     names = bundle["feature_names"]
     x = np.asarray(x_row, dtype=float).reshape(1, -1)
 
-    pipe = bundle["pipeline"]
-    scaler, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
+    explainer, scaler, lr = _explainer(bundle)
     xs = x if prescaled else scaler.transform(x)
-    
-    # Use LR coefficients as feature importance (lightweight alternative to SHAP)
-    contrib = xs[0] * lr.coef_[0]
+    sv = np.asarray(explainer.shap_values(xs)).reshape(-1)
     proba = float(lr.predict_proba(xs)[0, 1])
 
     fam_sum: dict[str, float] = {}
-    for name, c in zip(names, contrib):
+    for name, s in zip(names, sv):
         k = family_of(name)
-        fam_sum[k] = fam_sum.get(k, 0.0) + float(c)
+        fam_sum[k] = fam_sum.get(k, 0.0) + float(s)
 
     contribs = [{"family": k, "label": FAMILY_LABEL.get(k, k), "shap": v,
                  "direction": "toward Parkinson's" if v > 0 else "toward healthy"}

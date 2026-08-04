@@ -1,4 +1,4 @@
-# Cadence backend (Render) - torch-free serving.
+# Cadence backend - torch-free serving.
 numpy<2.4          # numba/librosa compatibility
 scipy
 pandas
@@ -7,7 +7,7 @@ librosa>=0.10
 soundfile
 opensmile>=2.5     # eGeMAPS features
 joblib>=1.3
-# shap>=0.44       # REMOVED: Too memory-intensive for 512 MB free tier. Using coefficient-based explanations instead.
+shap>=0.44         # Explainable AI (works fine on Hugging Face 16 GB RAM)
 fastapi>=0.110
 uvicorn[standard]>=0.29
 python-multipart>=0.0.9
