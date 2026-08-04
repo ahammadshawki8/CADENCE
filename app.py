@@ -1,27 +1,28 @@
 """Gradio interface for Cadence - Parkinson's screening via voice analysis."""
 import gradio as gr
 import sys
+import importlib.util
 from pathlib import Path
 import json
 
-# Add backend to path
+# The serving modules use flat imports (`from screen import ...`), so put backend/
+# on sys.path and import them by bare name, exactly as backend/app.py does. This
+# keeps one instance of the model and SHAP explainer shared by the API and the UI.
 backend_path = Path(__file__).parent / "backend"
 sys.path.insert(0, str(backend_path))
 
-# Warm up models at startup
-print("Starting warm-up: loading models...")
-try:
-    from backend.model import load_model
-    from backend.explain import _explainer
-    bundle = load_model()
-    _ = _explainer(bundle)
-    print(f"✓ Warm-up complete. Model + SHAP ready with {len(bundle['feature_names'])} features.")
-except Exception as e:
-    print(f"✗ Warm-up warning: {e}")
+# Load backend/app.py under an explicit module name: importing it as `app` would
+# collide with this file. It brings the FastAPI routes (/api/screen, /api/ddk,
+# /api/vowel, /api/health), CORS, and the lifespan warm-up. It also serves the
+# sibling frontend/ PWA at "/" whenever that folder is present, which it is here.
+_spec = importlib.util.spec_from_file_location("cadence_api", backend_path / "app.py")
+_api_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_api_mod)
+api = _api_mod.app
 
-from backend.screen import screen, screen_many
-from backend.ddk import analyze_ddk
-from backend.vowel import analyze_vowel
+from screen import screen, screen_many
+from ddk import analyze_ddk
+from vowel import analyze_vowel
 
 
 BAND_EMOJI = {"low": "🟢", "moderate": "🟡", "elevated": "🔴"}
@@ -205,5 +206,12 @@ with gr.Blocks(title="Cadence - Voice-Based Parkinson's Screening", theme=gr.the
     **Links:** [GitHub](https://github.com/ahammadshawki8/CADENCE) | [Frontend](https://cadence-murex-eight.vercel.app/)
     """)
 
+# One process serves three things on the Space URL:
+#   /        the installable PWA (served by backend/app.py from ../frontend)
+#   /api/*   the REST API the Vercel-hosted frontend calls
+#   /ui      this Gradio demo
+app = gr.mount_gradio_app(api, demo, path="/ui")
+
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)

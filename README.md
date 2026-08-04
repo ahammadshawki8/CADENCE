@@ -27,9 +27,14 @@ Multi-corpus, domain-adapted ML screening tool for early Parkinson's detection u
 
 ## Deployment
 
-This Space provides both a Gradio web interface and API endpoints.
+This Space runs one process that serves three things:
 
-**Gradio UI:** Available directly on this Space  
+| Path | What it is |
+|---|---|
+| `/` | the installable multilingual PWA (record, pa-ta-ka, vowel, results) |
+| `/ui` | the Gradio demo, one tab per task |
+| `/api/*` | the REST API, also called by the Vercel-hosted frontend |
+
 **Standalone Frontend:** https://cadence-murex-eight.vercel.app/
 
 ## Technical Stack
