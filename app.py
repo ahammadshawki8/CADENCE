@@ -24,6 +24,22 @@ from screen import screen, screen_many
 from ddk import analyze_ddk
 from vowel import analyze_vowel
 
+# ZeroGPU hardware refuses to start unless it detects at least one @spaces.GPU
+# function ("No @spaces.GPU function detected during startup"), and this Space
+# cannot be downgraded to cpu-basic without a PRO plan. Cadence inference is
+# CPU-only and torch-free, so declare a probe purely to satisfy that check. It
+# is never called on any request path and moves no work onto the GPU.
+try:
+    import spaces
+
+    @spaces.GPU(duration=1)
+    def _zerogpu_probe():
+        """Placeholder so ZeroGPU sees a GPU entry point. Not used for screening."""
+        return "cadence: inference runs on CPU"
+
+except Exception as e:  # local dev and any non-ZeroGPU host
+    print(f"spaces probe not registered ({e}); fine outside ZeroGPU.")
+
 
 BAND_EMOJI = {"low": "🟢", "moderate": "🟡", "elevated": "🔴"}
 
