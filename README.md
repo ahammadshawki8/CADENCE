@@ -5,6 +5,7 @@ colorFrom: blue
 colorTo: green
 sdk: gradio
 sdk_version: 4.44.0
+python_version: "3.12"
 app_file: app.py
 pinned: false
 license: mit
@@ -39,7 +40,7 @@ This Space provides both a Gradio web interface and API endpoints.
 - **Features:** openSMILE (eGeMAPS v02)
 - **Audio:** librosa + soundfile
 - **Explainability:** SHAP
-- **Deployment:** Hugging Face Spaces (ZeroGPU, 16 GB RAM)
+- **Deployment:** Hugging Face Spaces (CPU basic, 16 GB RAM; inference is torch-free)
 
 ## Usage
 

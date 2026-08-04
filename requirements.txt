@@ -4,7 +4,9 @@
 numpy<2.4
 scipy
 pandas
-scikit-learn>=1.3,<1.6  # Compatible with Python 3.10, model trained with 1.8.0 loads fine
+scikit-learn==1.8.0  # exact match to the version cadence_model.joblib was trained
+                     # under; needs python_version 3.12 in README (no cp310 wheels).
+                     # Do not loosen: cross-version unpickling can shift predictions.
 librosa>=0.10
 soundfile
 opensmile>=2.5
