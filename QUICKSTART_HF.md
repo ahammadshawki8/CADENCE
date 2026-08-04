@@ -22,8 +22,8 @@ All files are committed and ready to deploy:
    Owner: [your-username]
    Space name: cadence-parkinson-screening
    License: MIT
-   SDK: Docker ⚠️ IMPORTANT!
-   Space hardware: CPU basic (free)
+   SDK: Gradio ⚠️ IMPORTANT! (Not Docker - that's paid)
+   Space hardware: ZeroGPU (free tier)
    Visibility: Public
    ```
 

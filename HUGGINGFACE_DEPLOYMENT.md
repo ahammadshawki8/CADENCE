@@ -1,18 +1,18 @@
-# Deploy to Hugging Face Spaces
+# Deploy to Hugging Face Spaces (Gradio SDK)
 
 ## Why Hugging Face Spaces?
 
 **Render Free Tier:** 512 MB RAM ❌ (Too small for audio ML)  
-**Hugging Face Free Tier:** 16 GB RAM ✅ (Perfect for audio ML)
+**Hugging Face Free Tier (ZeroGPU):** 16 GB RAM + GPU ✅ (Perfect for audio ML)
 
 Your app needs:
 - librosa (audio processing)
 - openSMILE (feature extraction)
 - scikit-learn (ML inference)
-- Multiple audio file uploads
+- SHAP (explanations)
 
-**Total memory requirement:** ~400-600 MB  
-**Hugging Face provides:** 16 GB (32x more than needed!)
+**Total memory requirement:** ~600-800 MB  
+**Hugging Face provides:** 16 GB ✅
 
 ---
 
@@ -23,8 +23,8 @@ Your app needs:
 3. Fill in:
    - **Space name:** `cadence-parkinson-screening` (or your choice)
    - **License:** MIT
-   - **SDK:** **Docker** (important!)
-   - **Space hardware:** CPU basic (free tier) ✅
+   - **SDK:** **Gradio** ⚠️ (Important! Not Docker)
+   - **Space hardware:** ZeroGPU (free tier)
    - **Visibility:** Public (required for free tier)
 
 4. Click **"Create Space"**

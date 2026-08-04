@@ -3,10 +3,11 @@ title: Cadence - Voice-Based Parkinson's Screening
 emoji: 🎤
 colorFrom: blue
 colorTo: green
-sdk: docker
+sdk: gradio
+sdk_version: 4.44.0
+app_file: app.py
 pinned: false
 license: mit
-app_port: 8000
 ---
 
 # Cadence: Voice-Based Parkinson's Screening
