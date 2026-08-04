@@ -26,22 +26,28 @@ Multi-corpus, domain-adapted ML screening tool for early Parkinson's detection u
 
 ## Deployment
 
-This Space runs the FastAPI backend. Frontend hosted separately on Vercel.
+This Space provides both a Gradio web interface and API endpoints.
 
-**Backend API:** This Hugging Face Space  
-**Frontend:** https://cadence-murex-eight.vercel.app/
+**Gradio UI:** Available directly on this Space  
+**Standalone Frontend:** https://cadence-murex-eight.vercel.app/
 
 ## Technical Stack
 
-- **Backend:** FastAPI + Python 3.12
+- **Frontend:** Gradio 4.44.0 (web interface)
+- **Backend:** Python 3.10
 - **ML:** scikit-learn (LogisticRegression)
 - **Features:** openSMILE (eGeMAPS v02)
 - **Audio:** librosa + soundfile
-- **Deployment:** Docker on Hugging Face Spaces (16 GB RAM)
+- **Explainability:** SHAP
+- **Deployment:** Hugging Face Spaces (ZeroGPU, 16 GB RAM)
 
 ## Usage
 
-POST audio files to:
+### Gradio Interface
+Use the web interface directly on this Space - select a tab (Reading, DDK, or Vowel) and upload your audio.
+
+### API Endpoints
+You can also POST audio files programmatically to:
 - `/api/screen` - Reading passage analysis
 - `/api/ddk` - Diadochokinetic assessment
 - `/api/vowel` - Vowel phonation analysis
