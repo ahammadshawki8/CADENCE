@@ -34,7 +34,13 @@ async def lifespan(app: FastAPI):
     # Warm the model + SHAP explainer once so the first request is fast.
     try:
         from model import load_model
-        load_model()
+        from explain import _explainer
+        import numpy as np
+        print("Warming up model and SHAP explainer...")
+        bundle = load_model()
+        # Force SHAP explainer creation during startup (memory-intensive)
+        _ = _explainer(bundle)
+        print(f"Warm-up complete. Model loaded with {len(bundle['feature_names'])} features.")
     except Exception as e:  # pragma: no cover
         print("warm-up warning:", e)
     yield

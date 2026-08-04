@@ -48,12 +48,21 @@ def family_of(name: str) -> str:
     return "other"
 
 
+_explainer_cache = None
+
+
 def _explainer(bundle):
+    global _explainer_cache
+    if _explainer_cache is not None:
+        return _explainer_cache
+    
     import shap
     pipe = bundle["pipeline"]
     scaler, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
     bg = scaler.transform(bundle["background"])
-    return shap.LinearExplainer(lr, bg), scaler, lr
+    result = (shap.LinearExplainer(lr, bg), scaler, lr)
+    _explainer_cache = result
+    return result
 
 
 def explain_vector(x_row, bundle=None, top_k: int = 6, prescaled: bool = False):
