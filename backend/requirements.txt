@@ -2,7 +2,7 @@
 numpy<2.4          # numba/librosa compatibility
 scipy
 pandas
-scikit-learn>=1.4
+scikit-learn==1.8.0  # PINNED: matches trained model artifacts
 librosa>=0.10
 soundfile
 opensmile>=2.5     # eGeMAPS features
