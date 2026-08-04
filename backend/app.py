@@ -32,17 +32,20 @@ from vowel import analyze_vowel  # noqa: E402
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Warm the model + SHAP explainer once so the first request is fast.
+    print("Starting warm-up: loading model and SHAP explainer...")
     try:
+        import gc
         from model import load_model
         from explain import _explainer
         import numpy as np
-        print("Warming up model and SHAP explainer...")
         bundle = load_model()
         # Force SHAP explainer creation during startup (memory-intensive)
         _ = _explainer(bundle)
-        print(f"Warm-up complete. Model loaded with {len(bundle['feature_names'])} features.")
+        # Force garbage collection to free temporary memory
+        gc.collect()
+        print(f"✓ Warm-up complete. Model loaded with {len(bundle['feature_names'])} features, SHAP ready.")
     except Exception as e:  # pragma: no cover
-        print("warm-up warning:", e)
+        print(f"✗ Warm-up warning: {e}")
     yield
 
 

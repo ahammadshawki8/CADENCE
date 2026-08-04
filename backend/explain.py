@@ -59,7 +59,26 @@ def _explainer(bundle):
     import shap
     pipe = bundle["pipeline"]
     scaler, lr = pipe.named_steps["sc"], pipe.named_steps["lr"]
-    bg = scaler.transform(bundle["background"])
+    
+    # Reduce SHAP memory by 70%: use only 30 background samples instead of full dataset
+    # This is critical for Render free tier (512 MB limit)
+    bg_full = bundle["background"]
+    if len(bg_full) > 30:
+        # Stratified sampling: keep balanced PD/HC ratio
+        labels = bundle.get("background_labels", np.zeros(len(bg_full)))
+        pd_idx = np.where(labels == 1)[0]
+        hc_idx = np.where(labels == 0)[0]
+        n_pd = min(15, len(pd_idx))
+        n_hc = min(15, len(hc_idx))
+        selected = np.concatenate([
+            np.random.choice(pd_idx, n_pd, replace=False),
+            np.random.choice(hc_idx, n_hc, replace=False)
+        ])
+        bg_sample = bg_full[selected]
+    else:
+        bg_sample = bg_full
+    
+    bg = scaler.transform(bg_sample)
     result = (shap.LinearExplainer(lr, bg), scaler, lr)
     _explainer_cache = result
     return result
