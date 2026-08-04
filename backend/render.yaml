@@ -1,15 +1,26 @@
-# Render blueprint for the Cadence backend API.
-# In Render: New + -> Blueprint, point at this repo. Or create a Web Service manually
-# with Root Directory = backend, and the build/start commands below.
+# render.yaml - FOR REFERENCE ONLY (Blueprint requires paid plan)
+#
+# If you have access to Render Blueprints (paid plan), this file can be used
+# for infrastructure-as-code deployment. For FREE TIER, use the Web Service UI
+# as described in DEPLOY.md instead.
+#
+# Keep this file for documentation purposes, but deployment should be done
+# through the Render dashboard UI on the free tier.
+
 services:
   - type: web
     name: cadence-api
-    runtime: python
+    runtime: docker  # or "python" for native runtime
     rootDir: backend
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    # For Docker (recommended):
+    # - No buildCommand or startCommand needed (uses Dockerfile)
+    # For native Python runtime, uncomment:
+    # buildCommand: pip install -r requirements.txt
+    # startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12"
+        value: "3.14"  # Only used for native Python runtime
+
